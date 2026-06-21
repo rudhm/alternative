@@ -11,11 +11,12 @@ docker exec cloud_messenger_db pg_dump -U postgres cloud_messenger > "$BACKUP_DI
 # Copy uploads
 cp -r ./backend/uploads "$BACKUP_DIR/uploads"
 
-# Compress
-tar -czf "$BACKUP_DIR.tar.gz" -C "$BACKUP_DIR" .
+# Compress and Encrypt
+BACKUP_PASSWORD="${BACKUP_PASSWORD:-backup_secret_password}"
+tar -czf - -C "$BACKUP_DIR" . | openssl enc -aes-256-cbc -salt -pbkdf2 -pass pass:"$BACKUP_PASSWORD" -out "$BACKUP_DIR.tar.gz.enc"
 
 # Cleanup uncompressed
 rm -rf "$BACKUP_DIR"
 
 # Note: You can add an OCI CLI command here to upload to Object Storage
-# oci os object put -ns <namespace> -bn <bucket_name> --name "$(basename $BACKUP_DIR.tar.gz)" --file "$BACKUP_DIR.tar.gz"
+# oci os object put -ns <namespace> -bn <bucket_name> --name "$(basename $BACKUP_DIR.tar.gz.enc)" --file "$BACKUP_DIR.tar.gz.enc"

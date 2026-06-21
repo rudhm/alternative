@@ -34,17 +34,8 @@ export function WsProvider({ children }: { children: React.ReactNode }) {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     let wsUrl = process.env.NEXT_PUBLIC_WS_URL || `${protocol}//${window.location.host}/ws`;
     
-    try {
-      const urlObj = new URL(wsUrl);
-      if (authToken) {
-        urlObj.searchParams.set("token", authToken);
-      }
-      wsUrl = urlObj.toString();
-    } catch (e) {
-      if (authToken) {
-        wsUrl += `?token=${authToken}`;
-      }
-    }
+    // Token is sent securely via HTTPOnly cookie, no need to put it in URL
+
     
     const ws = new WebSocket(wsUrl);
     

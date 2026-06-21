@@ -31,5 +31,5 @@ export const verifyWsToken = (token: string): { userId: string } | null => {
 };
 
 export const generateToken = (userId: string) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '365d' });
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '30d' });
 };

@@ -376,17 +376,17 @@ export function ChatRoom() {
 
   return (
     <div className="flex flex-col h-[100dvh] w-full bg-[var(--color-bg)] overflow-hidden relative text-[var(--color-text)] transition-colors duration-300">
-      <div className="flex-none bg-[var(--color-surface-raised)] backdrop-blur-md px-4 h-16 flex items-center justify-between z-20 shadow-[var(--shadow-sm)] border-b border-[var(--color-border)] transition-colors duration-300">
+      <div className="flex-none bg-[var(--color-surface-raised)] backdrop-blur-md px-4 h-16 flex items-center justify-between z-20 border-b border-[var(--color-border)] transition-colors duration-300">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-full bg-[var(--color-accent)] flex items-center justify-center font-semibold text-base text-white">
+          <div className="w-9 h-9 rounded-full bg-[var(--color-accent)] flex items-center justify-center font-semibold text-sm text-white shadow-[var(--shadow-sm)]">
             {userId === "Hasi" ? "R" : "H"}
           </div>
           <div>
-            <h2 className="font-semibold text-[var(--color-text)] text-[16px] leading-tight">
+            <h2 className="font-semibold text-[var(--color-text)] text-[15px] leading-tight">
               {userId === "Hasi" ? "Rudh" : "Hasi"}
             </h2>
             <p className={cn(
-              "text-xs font-medium leading-tight mt-0.5",
+              "text-[11px] font-medium leading-tight mt-0.5",
               otherStatus === "online" ? "text-[var(--color-accent)] dark:text-[var(--color-accent-light)] capitalize" : "text-[var(--color-text-muted)] lowercase"
             )}>
               {typingUser && typingUser !== userId ? 'typing...' : displayStatus}
@@ -396,7 +396,7 @@ export function ChatRoom() {
         <button
           onClick={() => setIsDark(!isDark)}
           aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-          className="w-10 h-10 flex items-center justify-center rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors"
+          className="w-9 h-9 flex items-center justify-center rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors shadow-[var(--shadow-sm)]"
         >
           {isDark ? <Sun size={18} /> : <Moon size={18} />}
         </button>
@@ -411,7 +411,7 @@ export function ChatRoom() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.15 }}
-            className="bg-[var(--color-surface-overlay)] backdrop-blur-md border border-[var(--color-border)] p-3 rounded-xl shadow-[var(--shadow-lg)] flex flex-col space-y-2 select-none [-webkit-touch-callout:none]"
+            className="bg-[var(--color-surface-overlay)] backdrop-blur-md border border-[var(--color-border)] p-2.5 rounded-lg shadow-[var(--shadow-lg)] flex flex-col space-y-2 select-none [-webkit-touch-callout:none]"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex space-x-1 border-b border-[var(--color-border)] pb-2">
@@ -419,7 +419,7 @@ export function ChatRoom() {
                 <button 
                   key={e}
                   aria-label={`React with ${e}`}
-                  className="text-[28px] hover:scale-110 transition-transform active:scale-95 w-11 h-11 flex items-center justify-center"
+                  className="text-[26px] hover:scale-110 transition-transform active:scale-95 w-10 h-10 flex items-center justify-center"
                   onClick={() => toggleReaction(activeReactionId, e)}
                 >
                   {e}
@@ -427,7 +427,7 @@ export function ChatRoom() {
               ))}
             </div>
             <button
-              className="text-[var(--color-text-secondary)] text-sm font-medium py-1.5 hover:bg-[var(--color-accent-muted)] rounded-lg transition-colors flex items-center justify-center"
+              className="text-[var(--color-text-secondary)] text-sm font-medium py-1.5 hover:bg-[var(--color-accent-muted)] rounded-md transition-colors flex items-center justify-center"
               onClick={() => {
                 const msg = messages.find(m => m.id === activeReactionId);
                 if (msg) setReplyingTo(msg);
@@ -444,11 +444,11 @@ export function ChatRoom() {
 
       <div 
         ref={parentRef}
-        className="flex-1 overflow-y-auto px-4 pt-4 pb-32 select-none [-webkit-touch-callout:none]"
+        className="flex-1 overflow-y-auto px-3 sm:px-4 pt-3 pb-28 select-none [-webkit-touch-callout:none]"
         onScroll={handleScroll}
       >
         {isLoadingMore && (
-          <div className="text-center py-2 text-xs text-[var(--color-text-muted)] animate-pulse">Loading older messages...</div>
+          <div className="text-center py-2 text-[11px] font-medium text-[var(--color-text-muted)] animate-pulse">Loading older messages...</div>
         )}
         <div
           style={{
@@ -485,10 +485,10 @@ export function ChatRoom() {
                     }
                   }}
                   className={cn(
-                    "max-w-[80%] px-4 py-3 text-[15px] leading-relaxed relative cursor-pointer",
+                    "max-w-[82%] sm:max-w-[72%] px-3.5 py-2.5 text-[15px] leading-relaxed relative cursor-pointer",
                     isMe 
-                      ? "bg-[var(--color-accent)] text-white rounded-[22px] rounded-br-md shadow-[var(--shadow-md)]" 
-                      : "bg-[var(--color-surface)] text-[var(--color-text)] rounded-[22px] rounded-tl-md shadow-[var(--shadow-sm)] border border-[var(--color-border)]",
+                      ? "bg-[var(--color-accent)] text-white rounded-[20px] rounded-br-md shadow-[var(--shadow-md)]" 
+                      : "bg-[var(--color-surface)] text-[var(--color-text)] rounded-[20px] rounded-tl-md shadow-[var(--shadow-sm)] border border-[var(--color-border)]",
                     msg.pending && "opacity-60",
                     activeReactionId === msg.id && "ring-2 ring-[var(--color-accent)]/40"
                   )}
@@ -509,7 +509,7 @@ export function ChatRoom() {
                       "flex flex-col text-[13px] border-l-2 px-2.5 py-1.5 mb-2 rounded-r-md cursor-pointer overflow-hidden",
                       isMe ? "bg-white/15 border-white/50 text-white/90" : "bg-[var(--color-accent-muted)] border-[var(--color-accent)] text-[var(--color-text-secondary)]"
                     )}>
-                      <span className={cn("font-semibold text-[11px] uppercase tracking-wider mb-0.5", isMe ? "text-white/80" : "text-[var(--color-accent)]")}>
+                      <span className={cn("font-semibold text-[10px] uppercase mb-0.5", isMe ? "text-white/80" : "text-[var(--color-accent)]")}>
                         {msg.replyTo.authorId}
                       </span>
                       <span className="truncate">{msg.replyTo.content || "Media"}</span>
@@ -518,14 +518,14 @@ export function ChatRoom() {
                   {msg.media?.map((m: any, i: number) => (
                     <div key={i} className="mb-2">
                       {m.type === 'image' ? (
-                        <img src={m.url} alt="media" className="rounded-lg max-h-64 object-cover" />
+                        <img src={m.url} alt="media" className="rounded-lg max-w-full max-h-64 object-cover border border-white/10" />
                       ) : (
-                        <a href={m.url} target="_blank" rel="noreferrer" className="underline text-sm break-all">{m.url}</a>
+                        <a href={m.url} target="_blank" rel="noreferrer" className="block text-sm break-all underline decoration-current/30 underline-offset-4">{m.url}</a>
                       )}
                     </div>
                   ))}
-                  <p className="break-words">{msg.content}</p>
-                  <div className={cn("text-[10.5px] mt-1.5 text-right flex justify-end items-center space-x-1 font-medium", isMe ? "text-white/70" : "text-[var(--color-text-muted)]")}>
+                  <p className="break-words whitespace-pre-wrap">{msg.content}</p>
+                  <div className={cn("text-[10px] mt-1.5 text-right flex justify-end items-center space-x-1 font-medium", isMe ? "text-white/70" : "text-[var(--color-text-muted)]")}>
                     <span>
                       {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
@@ -552,7 +552,7 @@ export function ChatRoom() {
                   </div>
 
                   {msg.reactions && msg.reactions.length > 0 && (
-                    <div className="absolute -bottom-3 flex flex-wrap gap-1 z-10" style={{ [isMe ? 'right' : 'left']: '10px' }}>
+                    <div className="absolute -bottom-3 flex flex-wrap gap-1 z-10" style={{ [isMe ? 'right' : 'left']: '9px' }}>
                       {Object.entries(
                         msg.reactions.reduce((acc: any, r: any) => {
                           if (!acc[r.emoji]) acc[r.emoji] = { count: 0, me: false };
@@ -566,7 +566,7 @@ export function ChatRoom() {
                           aria-label={`${data.me ? 'Remove' : 'Add'} ${emoji} reaction`}
                           onClick={(e) => { e.stopPropagation(); toggleReaction(msg.id, emoji); }}
                           className={cn(
-                            "text-xs w-7 h-7 flex items-center justify-center rounded-full border transition-colors",
+                            "text-xs w-6 h-6 flex items-center justify-center rounded-full border transition-colors shadow-[var(--shadow-sm)]",
                             data.me 
                               ? "border-[var(--color-accent)]/30 bg-[var(--color-accent-muted)] text-[var(--color-accent)]" 
                               : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-muted)]"
@@ -584,19 +584,19 @@ export function ChatRoom() {
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 w-full p-3 safe-bottom z-20 pointer-events-none">
+      <div className="absolute bottom-0 left-0 w-full px-3 pt-2 safe-bottom z-20 pointer-events-none">
         <div className="max-w-full mx-auto pointer-events-auto">
           {replyingTo && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className="flex items-center justify-between mb-2 px-3 py-2.5 bg-[var(--color-surface-overlay)] backdrop-blur-md rounded-xl border border-[var(--color-border)] shadow-[var(--shadow-md)] mx-1"
+            className="flex items-center justify-between mb-2 px-3 py-2.5 bg-[var(--color-surface-overlay)] backdrop-blur-md rounded-lg border border-[var(--color-border)] shadow-[var(--shadow-md)] mx-1"
           >
             <div className="flex items-center space-x-2.5 overflow-hidden">
               <div className="w-1 h-8 bg-[var(--color-accent)] rounded-full flex-shrink-0" />
               <div className="flex flex-col overflow-hidden">
-                <span className="text-[var(--color-accent)] dark:text-[var(--color-accent-light)] font-semibold text-[11px] uppercase tracking-wider mb-0.5">Reply to {replyingTo.authorId}</span>
+                <span className="text-[var(--color-accent)] dark:text-[var(--color-accent-light)] font-semibold text-[10px] uppercase mb-0.5">Reply to {replyingTo.authorId}</span>
                 <span className="text-[var(--color-text-secondary)] truncate text-[13px]">{replyingTo.content || "Media"}</span>
               </div>
             </div>
@@ -610,11 +610,11 @@ export function ChatRoom() {
           </motion.div>
         )}
         <div 
-          className="flex items-center w-full px-2 py-1.5 rounded-full border border-[var(--color-border)] shadow-[var(--shadow-md)] bg-[var(--color-surface-raised)] backdrop-blur-md relative z-10"
+          className="flex items-center w-full min-h-[52px] px-2 py-1.5 rounded-full border border-[var(--color-border)] shadow-[var(--shadow-md)] bg-[var(--color-surface-raised)] backdrop-blur-md relative z-10"
         >
           <button 
             aria-label="Attach file"
-            className="w-10 h-10 flex items-center justify-center text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors active:scale-90 flex-shrink-0"
+            className="w-10 h-10 flex items-center justify-center text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors active:scale-[0.94] flex-shrink-0"
             onClick={() => fileInputRef.current?.click()}
           >
             <Paperclip size={20} />
@@ -657,7 +657,7 @@ export function ChatRoom() {
 
           <button 
             aria-label="Emoji picker"
-            className="w-10 h-10 flex items-center justify-center text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors active:scale-90 flex-shrink-0"
+            className="w-10 h-10 flex items-center justify-center text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors active:scale-[0.94] flex-shrink-0"
           >
             <Smile size={20} />
           </button>
@@ -666,7 +666,7 @@ export function ChatRoom() {
             onClick={handleSend}
             aria-label="Send message"
             className={cn(
-              "w-9 h-9 ml-1 rounded-full flex items-center justify-center transition-all active:scale-90 flex-shrink-0",
+              "w-9 h-9 ml-1 rounded-full flex items-center justify-center transition-all active:scale-[0.94] flex-shrink-0",
               text.trim() ? "bg-[var(--color-accent)] text-white shadow-[var(--shadow-sm)]" : "text-[var(--color-text-secondary)] hover:text-[var(--color-accent)]"
             )}
           >

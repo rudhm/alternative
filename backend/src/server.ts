@@ -31,7 +31,13 @@ async function initDb() {
 }
 initDb().catch(console.error);
 
-app.post('/api/auth/login', (req, res) => {
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  message: { error: 'Too many login attempts. Please try again later.' }
+});
+
+app.post('/api/auth/login', loginLimiter, (req, res) => {
   console.log("LOGIN HIT LOCAL", req.body);
   const { roomKey, userId } = req.body;
   if (roomKey !== ROOM_KEY) {
