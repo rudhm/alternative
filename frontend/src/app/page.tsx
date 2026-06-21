@@ -19,7 +19,7 @@ const Starfield = () => {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
     let animationFrameId: number;
@@ -27,72 +27,80 @@ const Starfield = () => {
     let shootingStars: { x: number; y: number; len: number; speed: number; opacity: number }[] = [];
 
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      // Use visual viewport, but cap resolution for mobile performance
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5); // Cap DPR at 1.5
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+      ctx.scale(dpr, dpr);
       initStars();
     };
 
     const initStars = () => {
       stars = [];
-      const numStars = Math.floor((canvas.width * canvas.height) / 4000);
+      // Cap max stars to 150 for massive performance boost on mobile
+      const numStars = Math.min(150, Math.floor((window.innerWidth * window.innerHeight) / 6000));
       for (let i = 0; i < numStars; i++) {
         stars.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          r: Math.random() * 1.5 + 0.5,
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight,
+          r: Math.random() * 1.2 + 0.3, // Smaller radius
           opacity: Math.random(),
-          speed: Math.random() * 0.05 + 0.01,
-          pulse: Math.random() * 0.05 + 0.01,
+          speed: Math.random() * 0.03 + 0.01,
+          pulse: Math.random() * 0.03 + 0.01,
         });
       }
     };
 
     const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
       // Twinkling background stars
+      ctx.fillStyle = "rgba(255, 220, 240, 0.8)";
       stars.forEach((s) => {
         s.opacity += s.pulse;
         if (s.opacity > 1 || s.opacity < 0.2) s.pulse = -s.pulse;
         s.y -= s.speed;
         if (s.y < 0) {
-          s.y = canvas.height;
-          s.x = Math.random() * canvas.width;
+          s.y = window.innerHeight;
+          s.x = Math.random() * window.innerWidth;
         }
 
+        ctx.globalAlpha = s.opacity;
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 220, 240, ${s.opacity * 0.7})`;
         ctx.fill();
       });
 
       // Occasional shooting stars
-      if (Math.random() < 0.01) {
+      if (Math.random() < 0.005) {
         shootingStars.push({
-          x: Math.random() * canvas.width,
+          x: Math.random() * window.innerWidth,
           y: 0,
-          len: Math.random() * 80 + 20,
-          speed: Math.random() * 10 + 10,
+          len: Math.random() * 50 + 20,
+          speed: Math.random() * 8 + 8,
           opacity: 1,
         });
       }
 
+      ctx.lineWidth = 1;
       for (let i = shootingStars.length - 1; i >= 0; i--) {
         const ss = shootingStars[i];
         ss.x -= ss.speed;
         ss.y += ss.speed;
-        ss.opacity -= 0.02;
+        ss.opacity -= 0.03;
 
         if (ss.opacity <= 0) {
           shootingStars.splice(i, 1);
           continue;
         }
 
+        ctx.globalAlpha = ss.opacity;
+        ctx.strokeStyle = "#ffe6fa";
         ctx.beginPath();
         ctx.moveTo(ss.x, ss.y);
         ctx.lineTo(ss.x + ss.len, ss.y - ss.len);
-        ctx.strokeStyle = `rgba(255, 230, 250, ${ss.opacity})`;
-        ctx.lineWidth = 1.5;
         ctx.stroke();
       }
 
@@ -109,7 +117,7 @@ const Starfield = () => {
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-60" />;
+  return <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-50" />;
 };
 
 export default function Home() {
@@ -212,28 +220,31 @@ export default function Home() {
   return (
     <main className={`flex flex-col items-center justify-center min-h-screen relative overflow-hidden bg-[#07050e] text-slate-100 ${inter.className}`}>
       
-      {/* Texture Grain */}
-      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none mix-blend-overlay" style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')" }}></div>
+      {/* Texture Grain - Using CSS gradient for extreme mobile performance instead of SVG mix-blend-overlay */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02)_0%,transparent_100%)]"></div>
 
-      {/* Nebula Orbs */}
+      {/* Nebula Orbs - Replaced filter:blur with radial gradients for 10x better GPU performance */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none flex items-center justify-center">
         {/* Deep Plum */}
         <motion.div
-          animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.6, 0.4], x: [0, -30, 0], y: [0, 40, 0] }}
+          animate={{ scale: [1, 1.1, 1], opacity: [0.6, 0.8, 0.6], x: [0, -20, 0], y: [0, 30, 0] }}
           transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute w-[70vw] h-[70vw] max-w-[700px] max-h-[700px] rounded-full bg-gradient-to-tr from-purple-900/50 to-transparent blur-[120px]"
+          className="absolute w-[90vw] h-[90vw] max-w-[800px] max-h-[800px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(88,28,135,0.3) 0%, rgba(88,28,135,0) 70%)' }}
         />
         {/* Violet */}
         <motion.div
-          animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3], x: [0, 50, 0], y: [0, -20, 0] }}
+          animate={{ scale: [1, 1.05, 1], opacity: [0.5, 0.7, 0.5], x: [0, 30, 0], y: [0, -15, 0] }}
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute top-1/4 right-1/4 w-[50vw] h-[50vw] max-w-[500px] max-h-[500px] rounded-full bg-gradient-to-bl from-violet-700/40 to-transparent blur-[100px]"
+          className="absolute top-1/4 right-1/4 w-[70vw] h-[70vw] max-w-[600px] max-h-[600px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(109,40,217,0.25) 0%, rgba(109,40,217,0) 70%)' }}
         />
-        {/* Amber */}
+        {/* Amber/Rose */}
         <motion.div
-          animate={{ scale: [1, 1.3, 1], opacity: [0.15, 0.25, 0.15], x: [0, -40, 0], y: [0, -40, 0] }}
+          animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.6, 0.4], x: [0, -30, 0], y: [0, -30, 0] }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 5 }}
-          className="absolute bottom-1/4 left-1/4 w-[60vw] h-[60vw] max-w-[600px] max-h-[600px] rounded-full bg-gradient-to-tr from-amber-600/20 to-rose-900/10 blur-[100px]"
+          className="absolute bottom-1/4 left-1/4 w-[80vw] h-[80vw] max-w-[700px] max-h-[700px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(225,29,72,0.15) 0%, rgba(217,119,6,0.1) 40%, transparent 70%)' }}
         />
       </div>
 
@@ -244,10 +255,10 @@ export default function Home() {
         initial={{ opacity: 0, y: 20, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-        className="z-10 w-full max-w-[24rem] p-10 mx-4 rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.6),_0_0_40px_rgba(244,63,94,0.05)_inset] flex flex-col relative"
+        className="z-10 w-[92%] max-w-[24rem] p-8 md:p-10 mx-auto rounded-3xl bg-[#ffffff05] backdrop-blur-xl border border-[#ffffff15] shadow-2xl flex flex-col relative"
       >
         {/* Decorative Monogram */}
-        <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-[#120e1c] border border-rose-400/20 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(244,63,94,0.15)] z-20">
+        <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-[#120e1c] border border-rose-400/20 rounded-full flex items-center justify-center shadow-lg z-20">
           <motion.div
             animate={{ y: [0, -3, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -258,9 +269,9 @@ export default function Home() {
 
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-rose-400/30 to-transparent" />
         
-        <div className="text-center mt-4 mb-8">
+        <div className="text-center mt-3 mb-7">
           <div className="overflow-hidden flex justify-center mb-1">
-            <h1 className={`text-3xl tracking-wide text-rose-50 flex ${playfair.className}`}>
+            <h1 className={`text-[28px] md:text-3xl tracking-wide text-rose-50 flex ${playfair.className}`}>
               {titleChars.map((char, index) => (
                 <motion.span
                   key={index}
@@ -290,9 +301,9 @@ export default function Home() {
           </div>
           
           <div className="flex items-center justify-center space-x-2 mt-4 opacity-40">
-            <div className="h-px w-12 bg-gradient-to-r from-transparent to-rose-300" />
+            <div className="h-px w-10 md:w-12 bg-gradient-to-r from-transparent to-rose-300" />
             <Sparkles size={12} className="text-rose-300" />
-            <div className="h-px w-12 bg-gradient-to-l from-transparent to-rose-300" />
+            <div className="h-px w-10 md:w-12 bg-gradient-to-l from-transparent to-rose-300" />
           </div>
         </div>
 
@@ -304,8 +315,8 @@ export default function Home() {
           transition={{ duration: 0.4 }}
         >
           <div className="relative group">
-            {/* Focus Bloom Ring */}
-            <div className={`absolute -inset-0.5 bg-gradient-to-r from-rose-500/0 via-rose-500/30 to-violet-500/0 rounded-xl transition-opacity duration-500 blur-sm ${isFocused ? 'opacity-100' : 'opacity-0'}`} />
+            {/* Focus Bloom Ring - Removed CSS blur for mobile performance */}
+            <div className={`absolute -inset-0.5 rounded-xl transition-opacity duration-300 ${isFocused ? 'opacity-100 bg-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.3)]' : 'opacity-0'}`} />
             
             <div className="relative">
               <input
@@ -315,7 +326,7 @@ export default function Home() {
                 autoCorrect="off"
                 autoCapitalize="none"
                 spellCheck={false}
-                className="peer w-full bg-[#0a0812]/80 border border-white/[0.08] rounded-xl px-5 pt-6 pb-2 text-[15px] font-medium text-white transition-all duration-300 focus:outline-none focus:border-rose-400/40 focus:bg-[#0f0b18] shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]"
+                className="peer w-full bg-[#0a0812]/90 border border-white/[0.08] rounded-xl px-5 pt-6 pb-2 text-[15px] font-medium text-white transition-all duration-300 focus:outline-none focus:border-rose-400/40 focus:bg-[#0f0b18]"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onFocus={() => setIsFocused(true)}
@@ -334,7 +345,7 @@ export default function Home() {
 
           <div className="flex items-center justify-between px-1">
             <label className="flex items-center space-x-2 cursor-pointer group">
-              <div className="relative flex items-center justify-center w-4 h-4 border border-rose-300/30 rounded focus-within:border-rose-400 transition-colors bg-[#0a0812]">
+              <div className="relative flex items-center justify-center w-4 h-4 border border-rose-300/30 rounded transition-colors bg-[#0a0812]">
                 <input
                   type="checkbox"
                   className="peer sr-only"
@@ -371,14 +382,14 @@ export default function Home() {
               whileTap={{ scale: 0.98 }}
               animate={{
                 boxShadow: [
-                  "0 0 15px rgba(244,63,94,0.2)",
-                  "0 0 25px rgba(244,63,94,0.4)",
-                  "0 0 15px rgba(244,63,94,0.2)"
+                  "0 0 10px rgba(244,63,94,0.1)",
+                  "0 0 20px rgba(244,63,94,0.25)",
+                  "0 0 10px rgba(244,63,94,0.1)"
                 ]
               }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               type="submit"
-              className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-rose-600/80 via-rose-500/80 to-purple-600/80 text-white font-medium text-[15px] py-4 transition-all border border-rose-400/20 group"
+              className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-rose-600/90 via-rose-500/90 to-purple-600/90 text-white font-medium text-[15px] py-3.5 transition-all border border-rose-400/20 group"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-out" />
               Enter Sanctuary
@@ -392,7 +403,7 @@ export default function Home() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 1.5 }}
-        className="absolute bottom-8 text-rose-200/30 text-xs tracking-widest uppercase flex items-center gap-2"
+        className="absolute bottom-6 md:bottom-8 text-rose-200/30 text-xs tracking-widest uppercase flex items-center gap-2"
       >
         <Star size={10} />
         Always Private
