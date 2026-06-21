@@ -392,7 +392,7 @@ export default function Home() {
         className="absolute bottom-6 md:bottom-8 text-rose-200/30 text-xs tracking-widest uppercase flex items-center gap-2"
       >
         <Star size={10} />
-        Always Private
+        Somewhere Only We Know
         <Star size={10} />
       </motion.p>
     </main>
