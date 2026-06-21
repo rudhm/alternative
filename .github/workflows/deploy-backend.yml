@@ -17,6 +17,15 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Fix permissions on Oracle Server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USERNAME }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          script: |
+            sudo chown -R $USER:$USER /home/ubuntu/cloud-messenger || true
+
       - name: Copy files to Oracle Server
         uses: appleboy/scp-action@v0.1.7
         with:
