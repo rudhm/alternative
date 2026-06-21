@@ -60,9 +60,10 @@ export const MessageBubble = React.memo(({
     <motion.div 
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={{ left: 0.2, right: 0.2 }}
+      dragElastic={0.7}
+      dragTransition={{ bounceStiffness: 600, bounceDamping: 25 }}
       onDragEnd={(e, info) => {
-        if (Math.abs(info.offset.x) > 40) {
+        if (Math.abs(info.offset.x) > 50 || Math.abs(info.velocity.x) > 500) {
           onSetReplyingTo(msg);
           onVibrate(20);
         }
