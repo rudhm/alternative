@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Paperclip, Smile, X } from "lucide-react";
+import { Send, Paperclip, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MessageInputBarProps {
@@ -12,7 +12,7 @@ interface MessageInputBarProps {
   onFocus?: () => void;
 }
 
-const EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🙏", "🔥", "🎉", "✨", "💯"];
+
 
 export const MessageInputBar = React.memo(({
   replyingTo,
@@ -23,7 +23,7 @@ export const MessageInputBar = React.memo(({
   onFocus,
 }: MessageInputBarProps) => {
   const [text, setText] = useState("");
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const myTypingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -56,7 +56,7 @@ export const MessageInputBar = React.memo(({
   }, [onTyping]);
 
   return (
-    <div className="absolute bottom-0 left-0 w-full px-3 sm:px-4 pb-4 sm:pb-6 pt-2 bg-gradient-to-t from-[var(--color-bg)] via-[var(--color-bg)] to-transparent z-40 pointer-events-none">
+    <div className="flex-shrink-0 w-full px-3 sm:px-4 pb-2 sm:pb-3 safe-bottom pt-2 bg-gradient-to-t from-[var(--color-bg)] via-[var(--color-bg)] to-transparent z-40 pointer-events-none">
       <div className="max-w-3xl mx-auto relative flex flex-col justify-end pointer-events-auto">
         {replyingTo && (
           <motion.div 
@@ -82,32 +82,7 @@ export const MessageInputBar = React.memo(({
           </motion.div>
         )}
 
-        <AnimatePresence>
-          {showEmojiPicker && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="absolute bottom-full mb-2 right-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl p-2 shadow-lg flex flex-wrap gap-2 max-w-[250px]"
-            >
-              {EMOJIS.map(emoji => (
-                <button
-                  key={emoji}
-                  onClick={() => {
-                    setText(prev => prev + emoji);
-                    setShowEmojiPicker(false);
-                    if (textareaRef.current) {
-                      textareaRef.current.focus();
-                    }
-                  }}
-                  className="text-2xl hover:bg-[var(--color-accent-muted)] p-1.5 rounded-lg transition-colors"
-                >
-                  {emoji}
-                </button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+
 
         <div 
           className="flex items-end w-full min-h-[52px] px-2 py-1.5 rounded-[26px] border border-[var(--color-border)] shadow-[var(--shadow-md)] bg-[var(--color-surface-raised)] backdrop-blur-md relative z-10"
@@ -152,13 +127,7 @@ export const MessageInputBar = React.memo(({
             }}
           />
 
-          <button 
-            aria-label="Emoji picker"
-            className={cn("w-10 h-10 flex items-center justify-center transition-colors active:scale-[0.94] flex-shrink-0 mb-0.5", showEmojiPicker ? "text-[var(--color-accent)]" : "text-[var(--color-text-secondary)] hover:text-[var(--color-accent)]")}
-            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          >
-            <Smile size={20} />
-          </button>
+
 
           <button 
             onClick={handleSend}

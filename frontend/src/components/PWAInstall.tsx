@@ -51,11 +51,11 @@ export function PWAInstall() {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 bg-surface z-50 rounded-t-3xl p-6 border-t border-white/10"
+            className="fixed bottom-0 left-0 right-0 bg-[var(--color-surface)] z-50 rounded-t-3xl p-6 border-t border-[var(--color-border)]"
           >
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="w-12 h-1 bg-white/20 rounded-full mb-2" />
-              <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center text-primary mb-2">
+              <div className="w-16 h-16 bg-[var(--color-accent-muted)] rounded-2xl flex items-center justify-center text-[var(--color-accent)] mb-2">
                 <Download size={32} />
               </div>
               <h3 className="text-xl font-semibold">Install App</h3>
@@ -64,13 +64,13 @@ export function PWAInstall() {
               </p>
               <button 
                 onClick={handleInstall}
-                className="w-full bg-primary text-primary-foreground font-semibold py-4 rounded-2xl active:scale-95 transition-transform"
+                className="w-full bg-[var(--color-accent)] text-white font-semibold py-4 rounded-2xl active:scale-95 transition-transform"
               >
                 Add to Home Screen
               </button>
               <button 
                 onClick={() => setShowInstall(false)}
-                className="w-full py-3 text-gray-500 font-medium active:bg-white/5 rounded-xl transition-colors"
+                className="w-full py-3 text-[var(--color-text-secondary)] font-medium active:bg-black/5 dark:active:bg-white/5 rounded-xl transition-colors"
               >
                 Maybe Later
               </button>

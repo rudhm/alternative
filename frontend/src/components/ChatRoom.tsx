@@ -207,7 +207,7 @@ export function ChatRoom() {
 
       <div 
         ref={parentRef}
-        className="flex-1 overflow-y-auto px-3 sm:px-4 pt-3 pb-28 select-none [-webkit-touch-callout:none]" style={{ overscrollBehavior: "contain" }}
+        className="flex-1 overflow-y-auto px-3 sm:px-4 pt-3 pb-2 select-none [-webkit-touch-callout:none]" style={{ overscrollBehavior: "contain" }}
         onScroll={handleScroll}
       >
         {isLoadingMore && (
