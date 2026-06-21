@@ -411,7 +411,7 @@ export function ChatRoom() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.15 }}
-            className="bg-[var(--color-surface-overlay)] backdrop-blur-md border border-[var(--color-border)] p-3 rounded-xl shadow-[var(--shadow-lg)] flex flex-col space-y-2"
+            className="bg-[var(--color-surface-overlay)] backdrop-blur-md border border-[var(--color-border)] p-3 rounded-xl shadow-[var(--shadow-lg)] flex flex-col space-y-2 select-none [-webkit-touch-callout:none]"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex space-x-1 border-b border-[var(--color-border)] pb-2">
@@ -444,7 +444,7 @@ export function ChatRoom() {
 
       <div 
         ref={parentRef}
-        className="flex-1 overflow-y-auto px-4 pt-4 pb-32"
+        className="flex-1 overflow-y-auto px-4 pt-4 pb-32 select-none [-webkit-touch-callout:none]"
         onScroll={handleScroll}
       >
         {isLoadingMore && (
@@ -629,6 +629,8 @@ export function ChatRoom() {
           
           <input
             type="text"
+            name="t_field"
+            id="t_field"
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="none"
