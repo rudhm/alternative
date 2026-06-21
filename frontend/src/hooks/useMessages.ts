@@ -13,7 +13,7 @@ export function useMessages({
   userId: string | null;
   onMessage: (handler: (msg: any) => void) => () => void;
   sendMessage: (msg: any) => void;
-  parentRef: React.RefObject<HTMLDivElement>;
+  parentRef: React.RefObject<HTMLDivElement | null>;
   isAtBottom: React.MutableRefObject<boolean>;
 }) {
   const [messages, setMessages] = useState<any[]>([]);
