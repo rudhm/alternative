@@ -14,18 +14,24 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to Oracle Server
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Copy files to Oracle Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USERNAME }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          source: "backend,docker-compose.yml,nginx.conf"
+          target: "/home/ubuntu/cloud-messenger"
+
+      - name: Restart Backend Docker Container
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.ORACLE_HOST }}
           username: ${{ secrets.ORACLE_USERNAME }}
           key: ${{ secrets.ORACLE_SSH_KEY }}
           script: |
-            # Navigate to the folder where your code lives on the Oracle server
             cd /home/ubuntu/cloud-messenger
-            
-            # Pull the latest changes from GitHub
-            git pull origin master
-            
-            # Rebuild and restart the backend Docker container
             docker compose up -d --build backend
