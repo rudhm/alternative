@@ -46,7 +46,7 @@ export function ChatRoom() {
 
   useEffect(() => {
     if (!token) return;
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://rudhasi.mooo.com";
     fetch(`${apiUrl}/api/messages`, { 
       headers: { Authorization: `Bearer ${token}` },
       credentials: "include" 
@@ -66,7 +66,7 @@ export function ChatRoom() {
     if (!token) return;
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://rudhasi.mooo.com";
         fetch(`${apiUrl}/api/messages`, { 
           headers: { Authorization: `Bearer ${token}` },
           credentials: "include" 
@@ -92,7 +92,7 @@ export function ChatRoom() {
   const loadMore = useCallback(async () => {
     if (!nextCursor || isLoadingMore) return;
     setIsLoadingMore(true);
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://rudhasi.mooo.com";
     
     const prevScrollHeight = parentRef.current?.scrollHeight || 0;
     const prevScrollTop = parentRef.current?.scrollTop || 0;
@@ -341,7 +341,7 @@ export function ChatRoom() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://rudhasi.mooo.com";
       const res = await fetch(`${apiUrl}/api/upload`, {
         method: "POST",
         body: formData,
