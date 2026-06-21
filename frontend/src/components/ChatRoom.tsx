@@ -19,7 +19,7 @@ import { usePresence } from "@/hooks/usePresence";
 const EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
 
 export function ChatRoom() {
-  const { userId, status, lastMessage, sendMessage, token } = useWs();
+  const { userId, status, onMessage, sendMessage, token } = useWs();
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -61,10 +61,10 @@ export function ChatRoom() {
     handleSend,
     retryMessage,
     handleFileUpload,
-  } = useMessages({ token, userId, lastMessage, sendMessage, parentRef, isAtBottom });
+  } = useMessages({ token, userId, onMessage, sendMessage, parentRef, isAtBottom });
 
-  const { typingUser, handleTyping } = useTyping(lastMessage, sendMessage);
-  const { otherStatus, displayStatus } = usePresence(lastMessage, userId, status);
+  const { typingUser, handleTyping } = useTyping(onMessage, sendMessage);
+  const { otherStatus, displayStatus } = usePresence(onMessage, userId, status);
 
   const items: any[] = [];
   let lastDateStr = "";

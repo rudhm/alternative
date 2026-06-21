@@ -11,7 +11,7 @@ interface WsContextType {
   token: string | null;
   connect: (userId: string, token: string) => void;
   sendMessage: (payload: any) => void;
-  lastMessage: any;
+  onMessage: (handler: (msg: any) => void) => () => void;
 }
 
 const WsContext = createContext<WsContextType | null>(null);
@@ -19,10 +19,17 @@ const WsContext = createContext<WsContextType | null>(null);
 export function WsProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<ConnectionStatus>("disconnected");
   const [userId, setUserId] = useState<string | null>(null);
-  const [lastMessage, setLastMessage] = useState<any>(null);
   const [token, setToken] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const handlersRef = useRef<Set<(msg: any) => void>>(new Set());
+
+  const onMessage = useCallback((handler: (msg: any) => void) => {
+    handlersRef.current.add(handler);
+    return () => {
+      handlersRef.current.delete(handler);
+    };
+  }, []);
 
   const connect = useCallback(function doConnect(uid: string, authToken?: string) {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
@@ -47,7 +54,7 @@ export function WsProvider({ children }: { children: React.ReactNode }) {
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        setLastMessage(data);
+        handlersRef.current.forEach(h => h(data));
       } catch (err) {
         console.error("Failed to parse WS message", err);
       }
@@ -82,7 +89,7 @@ export function WsProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <WsContext.Provider value={{ status, userId, token, connect, sendMessage, lastMessage }}>
+    <WsContext.Provider value={{ status, userId, token, connect, sendMessage, onMessage }}>
       {children}
     </WsContext.Provider>
   );

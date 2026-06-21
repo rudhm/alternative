@@ -228,7 +228,21 @@ wss.on('connection', (ws: any) => {
       if (data.type === 'chat') {
         const payload = chatPayloadSchema.parse(data.payload);
         const { id, content, media, replyToId } = payload;
-        const dbMsg = await prisma.message.create({
+        
+        const optimisticMsg = {
+          id,
+          content: content || null,
+          authorId: userId,
+          createdAt: new Date().toISOString(),
+          media: media || [],
+          reactions: [],
+          readReceipt: null,
+          replyToId: replyToId || null,
+          replyTo: null
+        };
+        broadcast({ type: 'chat', payload: optimisticMsg });
+
+        prisma.message.create({
           data: {
             id,
             content: content || null,
@@ -242,15 +256,13 @@ wss.on('connection', (ws: any) => {
             } : undefined
           },
           include: { media: true, reactions: true, readReceipt: true, replyTo: true }
-        });
-        broadcast({ type: 'chat', payload: dbMsg });
-        
-        // Send Telegram notification if the other user is offline and sender is Hasi
-        const otherUserId = userId === 'Hasi' ? 'Rudh' : 'Hasi';
-        const isOtherOnline = clients.has(otherUserId);
-        if (!isOtherOnline && userId === 'Hasi') {
-          sendTelegramNotification(otherUserId, userId, content || null).catch(console.error);
-        }
+        }).then(() => {
+          const otherUserId = userId === 'Hasi' ? 'Rudh' : 'Hasi';
+          const isOtherOnline = clients.has(otherUserId);
+          if (!isOtherOnline && userId === 'Hasi') {
+            sendTelegramNotification(otherUserId, userId, content || null).catch(console.error);
+          }
+        }).catch(err => console.error('DB write failed for chat', err));
       } else if (data.type === 'typing') {
         broadcast({ type: 'typing', userId }, [userId]);
       } else if (data.type === 'reaction') {
@@ -269,12 +281,15 @@ wss.on('connection', (ws: any) => {
       } else if (data.type === 'read') {
         const payload = readPayloadSchema.parse(data.payload);
         const { messageId } = payload;
-        const rr = await prisma.readReceipt.upsert({
+        
+        const optimisticRr = { messageId, userId, createdAt: new Date().toISOString() };
+        broadcast({ type: 'read_receipt', payload: optimisticRr });
+
+        prisma.readReceipt.upsert({
           where: { messageId },
           update: {},
           create: { messageId, userId }
-        });
-        broadcast({ type: 'read_receipt', payload: rr });
+        }).catch(err => console.error('DB write failed for read receipt', err));
       }
     } catch (err) {
       console.error('WS message error or validation failed', err);

@@ -9,18 +9,20 @@ const formatLastSeen = (isoStr: string) => {
   return `${d.toLocaleDateString()} at ${time}`;
 };
 
-export function usePresence(lastMessage: any, userId: string | null, wsStatus: string) {
+export function usePresence(onMessage: (handler: (msg: any) => void) => () => void, userId: string | null, wsStatus: string) {
   const [otherStatus, setOtherStatus] = useState<"online" | "offline">("offline");
   const [otherLastSeen, setOtherLastSeen] = useState<string | null>(null);
 
   useEffect(() => {
-    if (lastMessage?.type === 'presence') {
-       if (lastMessage.userId !== userId) {
-         setOtherStatus(lastMessage.status);
-         if (lastMessage.lastSeen) setOtherLastSeen(lastMessage.lastSeen);
-       }
-    }
-  }, [lastMessage, userId]);
+    return onMessage((msg: any) => {
+      if (msg?.type === 'presence') {
+         if (msg.userId !== userId) {
+           setOtherStatus(msg.status);
+           if (msg.lastSeen) setOtherLastSeen(msg.lastSeen);
+         }
+      }
+    });
+  }, [onMessage, userId]);
 
   const displayStatus = wsStatus !== "connected" 
     ? wsStatus 

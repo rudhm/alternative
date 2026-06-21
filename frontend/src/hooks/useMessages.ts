@@ -1,17 +1,17 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { vibrate } from "@/lib/vibrate";
 
 export function useMessages({ 
   token, 
   userId, 
-  lastMessage, 
+  onMessage, 
   sendMessage, 
   parentRef,
   isAtBottom
 }: { 
   token: string | null;
   userId: string | null;
-  lastMessage: any;
+  onMessage: (handler: (msg: any) => void) => () => void;
   sendMessage: (msg: any) => void;
   parentRef: React.RefObject<HTMLDivElement>;
   isAtBottom: React.MutableRefObject<boolean>;
@@ -105,69 +105,72 @@ export function useMessages({
   }, [nextCursor, isLoadingMore, token, parentRef]);
 
   useEffect(() => {
-    if (lastMessage?.type === 'chat') {
-      const msg = lastMessage.payload;
-      setMessages(prev => {
-        const idx = prev.findIndex(m => m.id === msg.id);
-        if (idx !== -1) {
-          const next = [...prev];
-          next[idx] = msg;
-          return next;
+    return onMessage((lastMessage: any) => {
+      if (lastMessage?.type === 'chat') {
+        const msg = lastMessage.payload;
+        setMessages(prev => {
+          const idx = prev.findIndex(m => m.id === msg.id);
+          if (idx !== -1) {
+            const next = [...prev];
+            next[idx] = msg;
+            return next;
+          }
+          return [...prev, msg];
+        });
+        if (msg.authorId !== userId) {
+          vibrate([10, 30, 10]);
         }
-        return [...prev, msg];
-      });
-      if (msg.authorId !== userId) {
-        vibrate([10, 30, 10]);
+      } else if (lastMessage?.type === 'reaction_added') {
+         const r = lastMessage.payload;
+         setMessages(prev => {
+           const idx = prev.findIndex(m => m.id === r.messageId);
+           if (idx === -1) return prev;
+           const next = [...prev];
+           const msg = { ...next[idx] };
+           msg.reactions = [...(msg.reactions || []), r];
+           next[idx] = msg;
+           return next;
+         });
+      } else if (lastMessage?.type === 'reaction_removed') {
+         const { messageId, userId: rUid, emoji } = lastMessage.payload;
+         setMessages(prev => {
+           const idx = prev.findIndex(m => m.id === messageId);
+           if (idx === -1) return prev;
+           const next = [...prev];
+           const msg = { ...next[idx] };
+           msg.reactions = (msg.reactions || []).filter((r: any) => !(r.userId === rUid && r.emoji === emoji));
+           next[idx] = msg;
+           return next;
+         });
+      } else if (lastMessage?.type === 'read_receipt') {
+         const rr = lastMessage.payload;
+         setMessages(prev => {
+           const idx = prev.findIndex(m => m.id === rr.messageId);
+           if (idx === -1) return prev;
+           const next = [...prev];
+           next[idx] = { ...next[idx], readReceipt: rr };
+           return next;
+         });
       }
-    } else if (lastMessage?.type === 'reaction_added') {
-       const r = lastMessage.payload;
-       setMessages(prev => {
-         const idx = prev.findIndex(m => m.id === r.messageId);
-         if (idx === -1) return prev;
-         const next = [...prev];
-         const msg = { ...next[idx] };
-         msg.reactions = [...(msg.reactions || []), r];
-         next[idx] = msg;
-         return next;
-       });
-    } else if (lastMessage?.type === 'reaction_removed') {
-       const { messageId, userId: rUid, emoji } = lastMessage.payload;
-       setMessages(prev => {
-         const idx = prev.findIndex(m => m.id === messageId);
-         if (idx === -1) return prev;
-         const next = [...prev];
-         const msg = { ...next[idx] };
-         msg.reactions = (msg.reactions || []).filter((r: any) => !(r.userId === rUid && r.emoji === emoji));
-         next[idx] = msg;
-         return next;
-       });
-    } else if (lastMessage?.type === 'read_receipt') {
-       const rr = lastMessage.payload;
-       setMessages(prev => {
-         const idx = prev.findIndex(m => m.id === rr.messageId);
-         if (idx === -1) return prev;
-         const next = [...prev];
-         next[idx] = { ...next[idx], readReceipt: rr };
-         return next;
-       });
-    }
-  }, [lastMessage, userId]);
+    });
+  }, [onMessage, userId]);
+
+  const receiptedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    const unreadIds = messages
-      .filter(m => m.authorId !== userId && !m.readReceipt && !m.pending)
-      .map(m => m.id);
-      
-    unreadIds.forEach(id => {
-      sendMessage({ type: "read", payload: { messageId: id } });
-      setMessages(prev => {
-         const idx = prev.findIndex(m => m.id === id);
-         if (idx === -1) return prev;
-         const next = [...prev];
-         next[idx] = { ...next[idx], readReceipt: { messageId: id, userId } };
-         return next;
+    messages
+      .filter(m => m.authorId !== userId && !m.readReceipt && !m.pending && !receiptedRef.current.has(m.id))
+      .forEach(m => {
+        receiptedRef.current.add(m.id);
+        sendMessage({ type: 'read', payload: { messageId: m.id } });
+        setMessages(prev => {
+           const idx = prev.findIndex(msg => msg.id === m.id);
+           if (idx === -1) return prev;
+           const next = [...prev];
+           next[idx] = { ...next[idx], readReceipt: { messageId: m.id, userId } };
+           return next;
+        });
       });
-    });
   }, [messages, userId, sendMessage]);
 
   const toggleReaction = useCallback((msgId: string, emoji: string) => {
