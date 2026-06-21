@@ -240,23 +240,13 @@ export default function Home() {
 
       <Starfield />
 
-      {/* Inner Glow Card */}
+        {/* Inner Glow Card */}
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
         className="z-10 w-[92%] max-w-[24rem] p-8 md:p-10 mx-auto rounded-3xl bg-[#ffffff05] backdrop-blur-xl border border-[#ffffff15] shadow-2xl flex flex-col relative"
       >
-        {/* Decorative Monogram */}
-        <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-[#120e1c] border border-rose-400/20 rounded-full flex items-center justify-center shadow-lg z-20">
-          <motion.div
-            animate={{ y: [0, -3, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <Lock size={16} className="text-rose-300/80" />
-          </motion.div>
-        </div>
-
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-rose-400/30 to-transparent" />
         
         <div className="text-center mt-3 mb-7">
@@ -346,7 +336,6 @@ export default function Home() {
               </div>
               <span className="text-xs text-rose-200/50 group-hover:text-rose-200/80 transition-colors">Remember me</span>
             </label>
-            <span className="text-xs text-rose-200/30">Just the two of us</span>
           </div>
           
           <AnimatePresence>
