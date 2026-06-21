@@ -548,14 +548,14 @@ export function ChatRoom() {
                       )}
                     </div>
                   ))}
-                  <div className="flex flex-row items-end justify-between w-full gap-2">
-                    <p className="break-words whitespace-pre-wrap min-w-0">{msg.content}</p>
-                    <div className={cn("text-[10px] flex-shrink-0 flex items-center space-x-1 font-medium", isMe ? "text-white/70" : "text-[var(--color-text-muted)]")}>
+                  <div className="flex flex-row items-end gap-2 w-full mt-0.5">
+                    <p className="flex-1 break-words whitespace-pre-wrap min-w-0">{msg.content}</p>
+                    <div className={cn("flex items-center ml-auto text-[10px] space-x-1 font-medium flex-shrink-0", isMe ? "text-white/70" : "text-[var(--color-text-muted)]")}>
                       <span>
                         {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                       {isMe && (
-                        <span className="flex items-center ml-1 text-[11.5px]">
+                        <span className="flex items-center ml-0.5 text-[11.5px]">
                           {msg.failed ? (
                             <button
                               onClick={(e) => { e.stopPropagation(); retryMessage(msg); }}
