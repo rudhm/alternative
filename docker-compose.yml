@@ -30,7 +30,7 @@ services:
       NODE_ENV: production
       FRONTEND_URL: ${FRONTEND_URL}
     volumes:
-      - ./backend/uploads:/app/uploads
+      - /mnt/chat_data/uploads:/app/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -52,3 +52,8 @@ services:
 
 volumes:
   pgdata:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/chat_data/pgdata
