@@ -22,12 +22,15 @@ app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', authMiddleware, express.static(uploadDir));
 
-const ROOM_KEY = 'ah';
-
 // Ensure seed users exist
 async function initDb() {
   await prisma.user.upsert({ where: { id: 'Hasi' }, update: {}, create: { id: 'Hasi' } });
   await prisma.user.upsert({ where: { id: 'Rudh' }, update: {}, create: { id: 'Rudh' } });
+
+  const existingKey = await prisma.setting.findUnique({ where: { key: 'ROOM_KEY' } });
+  if (!existingKey) {
+    await prisma.setting.create({ data: { key: 'ROOM_KEY', value: 'ah' } });
+  }
 }
 initDb().catch(console.error);
 
@@ -37,10 +40,14 @@ const loginLimiter = rateLimit({
   message: { error: 'Too many login attempts. Please try again later.' }
 });
 
-app.post('/api/auth/login', loginLimiter, (req, res) => {
+app.post('/api/auth/login', loginLimiter, async (req, res) => {
   console.log("LOGIN HIT LOCAL", req.body);
   const { roomKey, userId } = req.body;
-  if (roomKey !== ROOM_KEY) {
+  
+  const setting = await prisma.setting.findUnique({ where: { key: 'ROOM_KEY' } });
+  const expectedKey = setting?.value || 'ah';
+
+  if (roomKey !== expectedKey) {
     return res.status(401).json({ error: "Ah ah ah, you didn't say the magic word! 🦖" });
   }
   if (userId !== 'Hasi' && userId !== 'Rudh') {
