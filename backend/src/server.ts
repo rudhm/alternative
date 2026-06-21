@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', authMiddleware, express.static(uploadDir));
 
-const ROOM_KEY = process.env.ROOM_KEY || (process.env.NODE_ENV === 'production' ? (() => { throw new Error('ROOM_KEY required in production') })() : 'default-dev-key');
+const ROOM_KEY = process.env.ROOM_KEY || (process.env.NODE_ENV === 'production' ? (() => { throw new Error('ROOM_KEY required in production') })() : 'ah');
 
 // Ensure seed users exist
 async function initDb() {
@@ -41,7 +41,7 @@ app.post('/api/auth/login', loginLimiter, (req, res) => {
   console.log("LOGIN HIT LOCAL", req.body);
   const { roomKey, userId } = req.body;
   if (roomKey !== ROOM_KEY) {
-    return res.status(401).json({ error: 'Invalid room key' });
+    return res.status(401).json({ error: "Ah ah ah, you didn't say the magic word! 🦖" });
   }
   if (userId !== 'Hasi' && userId !== 'Rudh') {
     return res.status(400).json({ error: 'Invalid user ID' });

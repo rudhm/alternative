@@ -47,7 +47,8 @@ export default function Home() {
       });
 
       if (!res.ok) {
-        throw new Error("Invalid Room Key");
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.error || "Ah ah ah, you didn't say the magic word! 🦖");
       }
       
       const data = await res.json();
