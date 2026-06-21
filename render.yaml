@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: cloud-messenger-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npm run build && npx prisma generate && npx prisma db push
+    startCommand: npm start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cloud-messenger-db
+          property: connectionString
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3001"
+      # These will be left empty in the blueprint, so you can fill them securely in the Render Dashboard
+      - key: ROOM_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID_HASI
+        sync: false
+      - key: TELEGRAM_CHAT_ID_RUDH
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+
+databases:
+  - name: cloud-messenger-db
+    databaseName: cloud_messenger
+    user: render_user
+    plan: free

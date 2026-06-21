@@ -7,6 +7,7 @@ import path from 'path';
 import { authMiddleware, verifyWsToken, generateToken } from './auth';
 import { uploadMiddleware, processMedia, uploadDir } from './upload';
 import { prisma } from './prisma';
+import { sendTelegramNotification } from './telegram';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
@@ -243,6 +244,13 @@ wss.on('connection', (ws: any) => {
           include: { media: true, reactions: true, readReceipt: true, replyTo: true }
         });
         broadcast({ type: 'chat', payload: dbMsg });
+        
+        // Send Telegram notification if the other user is offline and sender is Hasi
+        const otherUserId = userId === 'Hasi' ? 'Rudh' : 'Hasi';
+        const isOtherOnline = clients.has(otherUserId);
+        if (!isOtherOnline && userId === 'Hasi') {
+          sendTelegramNotification(otherUserId, userId, content || null).catch(console.error);
+        }
       } else if (data.type === 'typing') {
         broadcast({ type: 'typing', userId }, [userId]);
       } else if (data.type === 'reaction') {
