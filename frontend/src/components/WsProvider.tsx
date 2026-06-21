@@ -32,7 +32,7 @@ export function WsProvider({ children }: { children: React.ReactNode }) {
 
     // Connect to WebSocket (using relative URL, assuming Nginx proxies /)
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || `${protocol}//${window.location.host}/ws`;
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "wss://rudhasi.mooo.com/ws";
     
     // Token is sent securely via HTTPOnly cookie, no need to put it in URL
 
