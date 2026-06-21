@@ -2,7 +2,7 @@ import multer from 'multer';
 import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
-import fileType from 'file-type';
+// Dynamic import used for file-type
 
 export const uploadDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -13,7 +13,8 @@ const storage = multer.memoryStorage();
 export const uploadMiddleware = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
 
 export const processMedia = async (file: Express.Multer.File): Promise<{ url: string, type: string }> => {
-  const typeInfo = await fileType.fromBuffer(file.buffer);
+  const { fromBuffer } = await import('file-type');
+  const typeInfo = await fromBuffer(file.buffer);
   if (!typeInfo) throw new Error('Unsupported file type');
   
   const ext = `.${typeInfo.ext}`.toLowerCase();

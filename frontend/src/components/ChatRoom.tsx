@@ -213,6 +213,24 @@ export function ChatRoom() {
     vibrate(10);
   };
 
+  const lastTapRef = useRef<{ time: number, msgId: string } | null>(null);
+
+  const handleTap = (msgId: string) => {
+    const now = Date.now();
+    const lastTap = lastTapRef.current;
+    if (lastTap && lastTap.msgId === msgId && now - lastTap.time < 350) {
+      // Double tap detected
+      const msg = messages.find(m => m.id === msgId);
+      const hasHeart = msg?.reactions?.some((r: any) => r.userId === userId && r.emoji === "❤️");
+      if (!hasHeart) {
+        toggleReaction(msgId, "❤️");
+      }
+      lastTapRef.current = null;
+    } else {
+      lastTapRef.current = { time: now, msgId };
+    }
+  };
+
   const virtualizer = useVirtualizer({
     count: messages.length,
     getScrollElement: () => parentRef.current,
@@ -497,6 +515,7 @@ export function ChatRoom() {
                     vibrate([20]);
                     setActiveReactionId(msg.id);
                   }}
+                  onClick={() => handleTap(msg.id)}
                   onTouchStart={() => handlePressStart(msg.id)}
                   onTouchEnd={handlePressEnd}
                   onTouchMove={handlePressEnd}
@@ -518,6 +537,7 @@ export function ChatRoom() {
                   {msg.media?.map((m: any, i: number) => (
                     <div key={i} className="mb-2">
                       {m.type === 'image' ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img src={m.url} alt="media" className="rounded-lg max-w-full max-h-64 object-cover border border-white/10" />
                       ) : (
                         <a href={m.url} target="_blank" rel="noreferrer" className="block text-sm break-all underline decoration-current/30 underline-offset-4">{m.url}</a>
