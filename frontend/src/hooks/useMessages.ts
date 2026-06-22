@@ -235,10 +235,69 @@ export function useMessages({
     }, 5000);
   }, [replyingTo, sendMessage, userId, isAtBottom]);
 
-  const retryMessage = useCallback((msg: any) => {
+  const retryMessage = useCallback(async (msg: any) => {
     setMessages(prev =>
       prev.map(m => m.id === msg.id ? { ...m, failed: false, pending: true } : m)
     );
+
+    const hasBlob = msg.media?.some((m: any) => m.url.startsWith('blob:'));
+    if (hasBlob) {
+      try {
+        const blobMedia = msg.media.find((m: any) => m.url.startsWith('blob:'));
+        const r = await fetch(blobMedia.url);
+        const blob = await r.blob();
+        
+        const formData = new FormData();
+        formData.append("file", blob, "upload.jpg");
+
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://rudhasi.mooo.com";
+        const uploadPromise = new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", `${apiUrl}/api/upload`);
+          if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+          xhr.withCredentials = true;
+
+          xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+              const progress = Math.round((event.loaded / event.total) * 100);
+              setMessages(prev => {
+                const idx = prev.findIndex(m => m.id === msg.id);
+                if (idx === -1) return prev;
+                if (prev[idx].uploadProgress === progress) return prev;
+                const next = [...prev];
+                next[idx] = { ...next[idx], uploadProgress: progress };
+                return next;
+              });
+            }
+          };
+
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try { resolve(JSON.parse(xhr.responseText)); } catch (err) { reject(err); }
+            } else {
+              reject(new Error("Upload failed"));
+            }
+          };
+          xhr.onerror = () => reject(new Error("Network Error"));
+          xhr.send(formData);
+        });
+
+        const data: any = await uploadPromise;
+        sendMessage({ type: "chat", payload: { id: msg.id, content: msg.content, media: [data], replyToId: msg.replyToId } });
+        return;
+      } catch (err) {
+        console.error("Retry upload failed", err);
+        setMessages(prev => {
+          const idx = prev.findIndex(m => m.id === msg.id);
+          if (idx === -1) return prev;
+          const next = [...prev];
+          next[idx] = { ...next[idx], pending: false, failed: true, uploadProgress: undefined };
+          return next;
+        });
+        return;
+      }
+    }
+
     sendMessage({ type: "chat", payload: { id: msg.id, content: msg.content, media: msg.media || [], replyToId: msg.replyToId } });
     setTimeout(() => {
       setMessages(prev => {
@@ -252,7 +311,7 @@ export function useMessages({
         return prev;
       });
     }, 5000);
-  }, [sendMessage]);
+  }, [sendMessage, token]);
 
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -329,7 +388,6 @@ export function useMessages({
         }
       });
       vibrate(10);
-      setTimeout(() => URL.revokeObjectURL(placeholderUrl), 10000);
     } catch (err) {
       console.error("Upload failed", err);
       setMessages(prev => {
@@ -339,9 +397,8 @@ export function useMessages({
         next[idx] = { ...next[idx], pending: false, failed: true, uploadProgress: undefined };
         return next;
       });
-      // Do not revoke the placeholder URL here so the user can still see which image failed to upload.
     }
-  }, [sendMessage, userId, token]);
+  }, [sendMessage, userId, token, isAtBottom]);
 
   return {
     messages,
