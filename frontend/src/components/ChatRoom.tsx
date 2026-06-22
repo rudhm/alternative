@@ -164,12 +164,21 @@ export function ChatRoom() {
             <h2 className="font-semibold text-[var(--color-text)] text-[15px] leading-tight">
               {userId === "Hasi" ? "Rudh" : "Hasi"}
             </h2>
-            <p className={cn(
-              "text-xs font-medium leading-tight mt-0.5",
+            <div className={cn(
+              "text-xs font-medium leading-tight mt-0.5 flex items-center h-4",
               otherStatus === "online" ? "text-[var(--color-accent)] dark:text-[var(--color-accent-light)] capitalize" : "text-[var(--color-text-muted)] lowercase"
             )}>
-              {typingUser && typingUser !== userId ? 'typing...' : displayStatus}
-            </p>
+              {typingUser && typingUser !== userId ? (
+                <div className="flex space-x-[3px] items-center h-full mt-0.5">
+                  <span className="text-[11px] leading-none opacity-80 mr-1 lowercase tracking-wide">typing</span>
+                  <motion.div animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut" }} className="w-1 h-1 bg-current rounded-full" />
+                  <motion.div animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.15, ease: "easeInOut" }} className="w-1 h-1 bg-current rounded-full" />
+                  <motion.div animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.3, ease: "easeInOut" }} className="w-1 h-1 bg-current rounded-full" />
+                </div>
+              ) : (
+                <span>{displayStatus}</span>
+              )}
+            </div>
           </div>
         </div>
         <button
@@ -227,7 +236,11 @@ export function ChatRoom() {
         onScroll={handleScroll}
       >
         {isLoadingMore && (
-          <div className="text-center py-2 text-xs font-medium text-[var(--color-text-muted)] animate-pulse">Loading older messages...</div>
+          <div className="flex flex-col py-4 space-y-4 px-2 animate-pulse w-full pointer-events-none">
+            <div className="self-start bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-2xl rounded-tl-sm w-3/4 max-w-[260px] h-12 opacity-60 shadow-sm backdrop-blur-sm" />
+            <div className="self-end bg-[var(--color-accent)] rounded-2xl rounded-tr-sm w-2/3 max-w-[220px] h-10 opacity-20 shadow-sm" />
+            <div className="self-start bg-[var(--color-surface-raised)] border border-[var(--color-border)] rounded-2xl rounded-tl-sm w-1/2 max-w-[180px] h-16 opacity-60 shadow-sm backdrop-blur-sm" />
+          </div>
         )}
         <div
           style={{

@@ -85,7 +85,7 @@ export const MessageInputBar = React.memo(({
 
 
         <div 
-          className="flex items-end w-full min-h-[52px] px-2 py-1.5 rounded-[26px] border border-[var(--color-border)] shadow-[var(--shadow-md)] bg-[var(--color-surface-raised)] backdrop-blur-md relative z-10"
+          className="flex items-end w-full min-h-[52px] px-2 py-1.5 rounded-[26px] border border-[var(--color-border-strong)] shadow-[var(--shadow-lg)] bg-[var(--color-surface-raised)] backdrop-blur-2xl relative z-10 transition-shadow duration-300"
         >
           <button 
             aria-label="Attach file"

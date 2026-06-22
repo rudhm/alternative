@@ -29,6 +29,9 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       NODE_ENV: production
       FRONTEND_URL: ${FRONTEND_URL}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID_HASI: ${TELEGRAM_CHAT_ID_HASI}
+      TELEGRAM_CHAT_ID_RUDH: ${TELEGRAM_CHAT_ID_RUDH}
     volumes:
       - /mnt/chat_data/uploads:/app/uploads
     depends_on:

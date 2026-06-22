@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 import { WsProvider } from "@/components/WsProvider";
+
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -28,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${outfit.variable} font-sans`}>
       <body className="antialiased w-full h-[100dvh] overflow-hidden flex flex-col bg-background">
         <WsProvider>
           {children}

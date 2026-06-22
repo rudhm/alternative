@@ -75,17 +75,18 @@ export const MessageBubble = React.memo(({
           onVibrate(20);
         }
       }}
-      initial={isNew ? { opacity: 0, scale: 0.5, y: 20 } : false}
+      initial={isNew ? { opacity: 0, scale: 0.85, y: 20 } : false}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
+      transition={{ type: "spring", stiffness: 450, damping: 28 }}
       style={{ originX: isMe ? 1 : 0, originY: 1 }}
       className={cn(
         "max-w-[82%] sm:max-w-[72%] leading-relaxed relative cursor-pointer",
         isOnlyEmoji ? "px-3 pb-1.5 pt-2 text-4xl" : "px-3.5 py-2.5 text-[15px]",
         msg.reactions && msg.reactions.length > 0 && "mb-5",
         isMe 
-          ? cn("bg-[var(--color-accent)] text-white shadow-[var(--shadow-md)] rounded-[20px]", isGroupEnd ? "rounded-br-md" : "") 
-          : cn("bg-[var(--color-surface)] text-[var(--color-text)] shadow-[var(--shadow-sm)] border border-[var(--color-border)] rounded-[20px]", isGroupStart ? "rounded-tl-md" : ""),
+          ? cn("bg-gradient-to-br from-[var(--color-accent-light)] to-[var(--color-accent)] text-white shadow-[var(--shadow-md)] rounded-[22px]", isGroupEnd && "rounded-br-[4px]", isGroupStart && "rounded-tr-[12px]") 
+          : cn("bg-[var(--color-surface-raised)] text-[var(--color-text)] shadow-[var(--shadow-md)] border border-[var(--color-border-strong)] backdrop-blur-xl rounded-[22px]", isGroupEnd && "rounded-bl-[4px]", isGroupStart && "rounded-tl-[12px]"),
         msg.pending && "opacity-60",
         activeReactionId === msg.id && "ring-2 ring-[var(--color-accent)]/40"
       )}
