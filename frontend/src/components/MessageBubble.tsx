@@ -36,11 +36,11 @@ export const MessageBubble = React.memo(({
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
   const bubbleRef = useRef<HTMLDivElement>(null);
 
-  const handlePressStart = useCallback(() => {
+  const handlePressStart = useCallback((e: React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement>) => {
+    const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
     pressTimer.current = setTimeout(() => {
       onVibrate([20]);
-      const rect = bubbleRef.current?.getBoundingClientRect();
-      onSetActiveReactionId(msg.id, rect ? { top: rect.top, isMe: msg.authorId === userId } : undefined);
+      onSetActiveReactionId(msg.id, { top: clientY, isMe: msg.authorId === userId });
     }, 400);
   }, [msg.id, msg.authorId, userId, onSetActiveReactionId, onVibrate]);
 
@@ -92,8 +92,7 @@ export const MessageBubble = React.memo(({
       onContextMenu={(e) => {
         e.preventDefault();
         onVibrate([20]);
-        const rect = bubbleRef.current?.getBoundingClientRect();
-        onSetActiveReactionId(msg.id, rect ? { top: rect.top, isMe: msg.authorId === userId } : undefined);
+        onSetActiveReactionId(msg.id, { top: e.clientY, isMe: msg.authorId === userId });
       }}
       onClick={handleTap}
       onTouchStart={handlePressStart}

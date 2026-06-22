@@ -152,7 +152,7 @@ export function ChatRoom() {
 
   return (
     <div className="flex flex-col h-[100dvh] w-full bg-[var(--color-bg)] overflow-hidden relative text-[var(--color-text)] transition-colors duration-300">
-      <div className="flex-none bg-[var(--color-surface-raised)] backdrop-blur-md px-4 h-16 flex items-center justify-between z-20 border-b border-[var(--color-border)] transition-colors duration-300">
+      <div className="flex-none bg-[var(--color-surface-raised)] backdrop-blur-md px-4 h-16 flex items-center justify-between z-[200000] border-b border-[var(--color-border)] transition-colors duration-300">
         <div className="flex items-center space-x-3">
           <div className="w-9 h-9 rounded-full bg-[var(--color-accent)] flex items-center justify-center font-semibold text-sm text-white shadow-[var(--shadow-sm)]">
             {userId === "Hasi" ? "R" : "H"}
@@ -180,7 +180,7 @@ export function ChatRoom() {
       
       {activeReactionId && (
         <div 
-          className="fixed inset-0 z-50 bg-black/20 dark:bg-black/40"
+          className="fixed inset-0 z-[300000] bg-black/20 dark:bg-black/40"
           onClick={() => setActiveReactionId(null)}
         >
           <motion.div 
@@ -265,7 +265,7 @@ export function ChatRoom() {
                 )}
                 style={{
                   transform: `translateY(${vItem.start}px)`,
-                  zIndex: items.length - vItem.index,
+                  zIndex: activeReactionId === item.id ? 400000 : 100000 - vItem.index,
                   willChange: "transform",
                 }}
               >
@@ -294,7 +294,7 @@ export function ChatRoom() {
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            className="absolute bottom-24 right-4 z-30"
+            className="absolute bottom-24 right-4 z-[150000]"
           >
             <button
               onClick={scrollToBottom}
