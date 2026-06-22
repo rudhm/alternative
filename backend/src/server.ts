@@ -21,7 +21,7 @@ const allowedOrigins = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
-app.use('/uploads', authMiddleware, express.static(uploadDir));
+app.use('/uploads', express.static(uploadDir));
 
 // Ensure seed users exist
 async function initDb() {
