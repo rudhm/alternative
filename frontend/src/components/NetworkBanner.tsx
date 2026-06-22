@@ -14,8 +14,8 @@ export function NetworkBanner() {
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          className={`absolute top-16 left-0 w-full flex items-center justify-center space-x-2 py-1.5 px-4 text-xs font-semibold z-30 border-b border-black/5 dark:border-white/10 shadow-sm
-            ${status === "disconnected" ? "bg-[var(--color-danger)] text-white" : "bg-[var(--color-warning)] text-[var(--color-text)]"}
+          className={`relative flex-shrink-0 w-full flex items-center justify-center space-x-2 py-1.5 px-4 text-xs font-semibold z-30 border-b border-black/5 dark:border-white/10 shadow-sm
+            ${status === "disconnected" ? "bg-[var(--color-danger)] text-white" : "bg-[var(--color-warning)] text-black/90"}
           `}
         >
           {status === "disconnected" && <WifiOff size={14} />}
