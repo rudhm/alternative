@@ -164,11 +164,11 @@ export const MessageBubble = React.memo(({
           <div key={i} className="mb-2 relative">
             {m.type === 'image' ? (
               isCorruptedServerBlob ? (
-                <div className="rounded-lg w-full h-32 bg-white/5 border border-white/10 flex items-center justify-center text-[var(--color-text-muted)] text-sm italic">
+                <div className="rounded-lg w-full h-32 bg-white/5 flex items-center justify-center text-[var(--color-text-muted)] text-sm italic">
                   Image expired or unavailable
                 </div>
               ) : (
-                <img src={mediaUrl} alt="media" className="rounded-lg max-w-full min-h-[200px] max-h-64 object-cover border border-white/10" />
+                <img src={mediaUrl} alt="media" className="rounded-lg max-w-full min-h-[200px] max-h-64 object-cover" />
               )
             ) : (
               <a href={mediaUrl} target="_blank" rel="noreferrer" className="block text-sm break-all underline decoration-current/30 underline-offset-4">{mediaUrl}</a>
