@@ -137,14 +137,6 @@ export default function Home() {
     return <ChatRoom />;
   }
 
-  if (isChecking) {
-    return (
-      <main className="flex flex-1 flex-col items-center justify-center min-h-screen bg-[#07050e] relative overflow-hidden">
-        <div className="w-10 h-10 border-[3px] border-rose-500/20 border-t-rose-400 rounded-full animate-spin z-10" />
-      </main>
-    );
-  }
-
   const titleChars = Array.from("Classified");
 
   return (
@@ -153,38 +145,53 @@ export default function Home() {
       {/* Texture Grain - Using CSS gradient for extreme mobile performance instead of SVG mix-blend-overlay */}
       <div className="absolute inset-0 z-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02)_0%,transparent_100%)]"></div>
 
-      {/* Nebula Orbs - Replaced filter:blur with radial gradients for 10x better GPU performance */}
+      {/* Nebula Orbs - Hardware accelerated with will-change */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none flex items-center justify-center">
         {/* Deep Plum */}
         <motion.div
           animate={{ scale: [1, 1.1, 1], opacity: [0.6, 0.8, 0.6], x: [0, -20, 0], y: [0, 30, 0] }}
           transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
           className="absolute w-[90vw] h-[90vw] max-w-[800px] max-h-[800px] rounded-full"
-          style={{ background: 'radial-gradient(circle, rgba(88,28,135,0.3) 0%, rgba(88,28,135,0) 70%)' }}
+          style={{ background: 'radial-gradient(circle, rgba(88,28,135,0.3) 0%, rgba(88,28,135,0) 70%)', willChange: "transform, opacity" }}
         />
         {/* Violet */}
         <motion.div
           animate={{ scale: [1, 1.05, 1], opacity: [0.5, 0.7, 0.5], x: [0, 30, 0], y: [0, -15, 0] }}
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 2 }}
           className="absolute top-1/4 right-1/4 w-[70vw] h-[70vw] max-w-[600px] max-h-[600px] rounded-full"
-          style={{ background: 'radial-gradient(circle, rgba(109,40,217,0.25) 0%, rgba(109,40,217,0) 70%)' }}
+          style={{ background: 'radial-gradient(circle, rgba(109,40,217,0.25) 0%, rgba(109,40,217,0) 70%)', willChange: "transform, opacity" }}
         />
         {/* Amber/Rose */}
         <motion.div
           animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.6, 0.4], x: [0, -30, 0], y: [0, -30, 0] }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 5 }}
           className="absolute bottom-1/4 left-1/4 w-[80vw] h-[80vw] max-w-[700px] max-h-[700px] rounded-full"
-          style={{ background: 'radial-gradient(circle, rgba(225,29,72,0.15) 0%, rgba(217,119,6,0.1) 40%, transparent 70%)' }}
+          style={{ background: 'radial-gradient(circle, rgba(225,29,72,0.15) 0%, rgba(217,119,6,0.1) 40%, transparent 70%)', willChange: "transform, opacity" }}
         />
       </div>
 
       <Starfield />
 
+      <AnimatePresence mode="wait">
+        {isChecking ? (
+          <motion.div
+            key="loader"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.4 }}
+            className="z-10 flex flex-col items-center justify-center absolute inset-0"
+          >
+            <div className="w-10 h-10 border-[3px] border-rose-500/20 border-t-rose-400 rounded-full animate-spin shadow-[0_0_15px_rgba(244,63,94,0.2)]" />
+            <p className="mt-4 text-rose-200/50 text-xs tracking-widest uppercase animate-pulse">Decrypting Protocol</p>
+          </motion.div>
+        ) : (
         {/* Inner Glow Card */}
       <motion.div
+        key="login-card"
         initial={{ opacity: 0, y: 20, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="z-10 w-[92%] max-w-[24rem] p-8 md:p-10 mx-auto rounded-3xl bg-[#ffffff05] backdrop-blur-xl border border-[#ffffff15] shadow-2xl flex flex-col relative"
       >
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-rose-400/30 to-transparent" />
@@ -295,23 +302,24 @@ export default function Home() {
             <motion.button
               whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.98 }}
-              animate={{
-                boxShadow: [
-                  "0 0 10px rgba(244,63,94,0.1)",
-                  "0 0 20px rgba(244,63,94,0.25)",
-                  "0 0 10px rgba(244,63,94,0.1)"
-                ]
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               type="submit"
               className="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-rose-600/90 via-rose-500/90 to-purple-600/90 text-white font-medium text-[15px] py-3.5 transition-all border border-rose-400/20 group"
             >
+              {/* Hardware accelerated glow */}
+              <motion.div 
+                className="absolute inset-0 bg-rose-500/50 rounded-xl blur-xl -z-10"
+                animate={{ opacity: [0.2, 0.6, 0.2] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                style={{ willChange: "opacity" }}
+              />
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-out" />
-              Enter Sanctuary
+              <span className="relative z-10">Enter Sanctuary</span>
             </motion.button>
           </div>
         </motion.form>
       </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Footer Tagline */}
       <motion.p 
