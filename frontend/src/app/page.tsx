@@ -142,6 +142,9 @@ export default function Home() {
         if (res.ok) {
           const data = await res.json();
           if (data.userId) {
+            if (data.partnerNickname) {
+              localStorage.setItem(`nickname_${data.userId}`, data.partnerNickname);
+            }
             connect(data.userId, data.token || "");
             return;
           }
@@ -193,6 +196,10 @@ export default function Home() {
       }
       
       const data = await res.json();
+      
+      if (data.partnerNickname && selectedUserId) {
+        localStorage.setItem(`nickname_${selectedUserId}`, data.partnerNickname);
+      }
       
       if (rememberMe && selectedUserId) {
         localStorage.setItem('chat_token', data.token || "");

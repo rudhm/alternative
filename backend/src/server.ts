@@ -49,13 +49,25 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     sameSite: 'none', // required for cross-origin cookie sharing
     maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
   });
-  res.json({ success: true, userId, token });
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  res.json({ success: true, userId, token, partnerNickname: user?.partnerNickname });
 });
 
-app.get('/api/auth/me', authMiddleware, (req, res) => {
+app.get('/api/auth/me', authMiddleware, async (req, res) => {
   const userId = (req as any).userId;
   const token = generateToken(userId);
-  res.json({ success: true, userId, token });
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  res.json({ success: true, userId, token, partnerNickname: user?.partnerNickname });
+});
+
+app.post('/api/user/nickname', authMiddleware, async (req, res) => {
+  const userId = (req as any).userId;
+  const { nickname } = req.body;
+  await prisma.user.update({
+    where: { id: userId },
+    data: { partnerNickname: nickname }
+  });
+  res.json({ success: true });
 });
 
 const uploadLimiter = rateLimit({

@@ -179,12 +179,20 @@ export function ChatRoom() {
           <div>
             {isEditingName ? (
               <form 
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
                   const newName = editNameValue.trim() || defaultOtherName;
                   setCustomOtherName(newName);
                   localStorage.setItem(`nickname_${userId}`, newName);
                   setIsEditingName(false);
+                  
+                  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://rudhasi.mooo.com";
+                  await fetch(`${apiUrl}/api/user/nickname`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ nickname: newName }),
+                    credentials: "include"
+                  }).catch(console.error);
                 }}
                 className="flex items-center"
               >
@@ -193,11 +201,19 @@ export function ChatRoom() {
                   autoFocus
                   value={editNameValue}
                   onChange={(e) => setEditNameValue(e.target.value)}
-                  onBlur={() => {
+                  onBlur={async () => {
                     const newName = editNameValue.trim() || defaultOtherName;
                     setCustomOtherName(newName);
                     localStorage.setItem(`nickname_${userId}`, newName);
                     setIsEditingName(false);
+                    
+                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://rudhasi.mooo.com";
+                    await fetch(`${apiUrl}/api/user/nickname`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ nickname: newName }),
+                      credentials: "include"
+                    }).catch(console.error);
                   }}
                   className="font-semibold text-[var(--color-text)] text-[15px] leading-tight bg-transparent border-b border-[var(--color-accent)] outline-none w-32"
                 />
