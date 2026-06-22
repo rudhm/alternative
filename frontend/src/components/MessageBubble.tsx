@@ -117,8 +117,7 @@ export const MessageBubble = React.memo(({
       {msg.media?.map((m: any, i: number) => (
         <div key={i} className="mb-2">
           {m.type === 'image' ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={m.url} alt="media" className="rounded-lg max-w-full max-h-64 object-cover border border-white/10" />
+            <img src={m.url} alt="media" className="rounded-lg max-w-full min-h-[200px] max-h-64 object-cover border border-white/10" />
           ) : (
             <a href={m.url} target="_blank" rel="noreferrer" className="block text-sm break-all underline decoration-current/30 underline-offset-4">{m.url}</a>
           )}
