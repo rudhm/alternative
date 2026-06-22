@@ -22,6 +22,11 @@ export function ChatRoom() {
   const { userId, status, onMessage, sendMessage, token } = useWs();
   const [isDark, setIsDark] = useState(false);
 
+  const defaultOtherName = userId === "Hasi" ? "Rudh" : "Hasi";
+  const [customOtherName, setCustomOtherName] = useState(defaultOtherName);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState("");
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedTheme = localStorage.getItem("chat_theme");
@@ -30,6 +35,17 @@ export function ChatRoom() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && userId) {
+      const storedName = localStorage.getItem(`nickname_${userId}`);
+      if (storedName) {
+        setCustomOtherName(storedName);
+      } else {
+        setCustomOtherName(userId === "Hasi" ? "Rudh" : "Hasi");
+      }
+    }
+  }, [userId]);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -158,12 +174,46 @@ export function ChatRoom() {
       <div className="flex-none bg-[var(--color-surface-raised)] backdrop-blur-md px-4 h-16 flex items-center justify-between z-[200000] border-b border-[var(--color-border)] transition-colors duration-300">
         <div className="flex items-center space-x-3">
           <div className="w-9 h-9 rounded-full bg-[var(--color-accent)] flex items-center justify-center font-semibold text-sm text-white shadow-[var(--shadow-sm)]">
-            {userId === "Hasi" ? "R" : "H"}
+            {customOtherName ? customOtherName.charAt(0).toUpperCase() : (userId === "Hasi" ? "R" : "H")}
           </div>
           <div>
-            <h2 className="font-semibold text-[var(--color-text)] text-[15px] leading-tight">
-              {userId === "Hasi" ? "Rudh" : "Hasi"}
-            </h2>
+            {isEditingName ? (
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const newName = editNameValue.trim() || defaultOtherName;
+                  setCustomOtherName(newName);
+                  localStorage.setItem(`nickname_${userId}`, newName);
+                  setIsEditingName(false);
+                }}
+                className="flex items-center"
+              >
+                <input
+                  type="text"
+                  autoFocus
+                  value={editNameValue}
+                  onChange={(e) => setEditNameValue(e.target.value)}
+                  onBlur={() => {
+                    const newName = editNameValue.trim() || defaultOtherName;
+                    setCustomOtherName(newName);
+                    localStorage.setItem(`nickname_${userId}`, newName);
+                    setIsEditingName(false);
+                  }}
+                  className="font-semibold text-[var(--color-text)] text-[15px] leading-tight bg-transparent border-b border-[var(--color-accent)] outline-none w-32"
+                />
+              </form>
+            ) : (
+              <h2 
+                onClick={() => {
+                  setEditNameValue(customOtherName);
+                  setIsEditingName(true);
+                }}
+                className="font-semibold text-[var(--color-text)] text-[15px] leading-tight cursor-pointer hover:opacity-80 transition-opacity"
+                title="Click to change nickname"
+              >
+                {customOtherName}
+              </h2>
+            )}
             <div className={cn(
               "text-xs font-medium leading-tight mt-0.5 flex items-center h-4",
               otherStatus === "online" ? "text-[var(--color-accent)] dark:text-[var(--color-accent-light)] capitalize" : "text-[var(--color-text-muted)] lowercase"
