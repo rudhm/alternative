@@ -154,7 +154,7 @@ export function ChatRoom() {
       }
       return size;
     },
-    overscan: 25,
+    overscan: 5,
   });
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
@@ -358,7 +358,6 @@ export function ChatRoom() {
                 style={{
                   transform: `translateY(${vItem.start}px)`,
                   zIndex: activeReactionId === item.id ? 400000 : 100000 - vItem.index,
-                  willChange: "transform",
                 }}
               >
                 <MessageBubble 

@@ -86,7 +86,7 @@ export const MessageBubble = React.memo(({
         msg.reactions && msg.reactions.length > 0 && "mb-5",
         isMe 
           ? cn("bg-gradient-to-br from-[var(--color-accent-light)] to-[var(--color-accent)] text-white shadow-[var(--shadow-md)] rounded-[22px]", isGroupEnd && "rounded-br-[4px]", isGroupStart && "rounded-tr-[12px]") 
-          : cn("bg-[var(--color-surface-raised)] text-[var(--color-text)] shadow-[var(--shadow-md)] border border-[var(--color-border-strong)] backdrop-blur-xl rounded-[22px]", isGroupEnd && "rounded-bl-[4px]", isGroupStart && "rounded-tl-[12px]"),
+          : cn("bg-[var(--color-surface-raised)] text-[var(--color-text)] shadow-[var(--shadow-md)] border border-[var(--color-border-strong)] rounded-[22px]", isGroupEnd && "rounded-bl-[4px]", isGroupStart && "rounded-tl-[12px]"),
         msg.pending && "opacity-60",
         activeReactionId === msg.id && "ring-2 ring-[var(--color-accent)]/40"
       )}
