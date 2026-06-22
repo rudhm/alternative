@@ -279,24 +279,40 @@ export function useMessages({
       formData.append("file", file);
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://rudhasi.mooo.com";
-      const res = await fetch(`${apiUrl}/api/upload`, {
-        method: "POST",
-        body: formData,
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: "include"
+      
+      const uploadPromise = new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", `${apiUrl}/api/upload`);
+        if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+        xhr.withCredentials = true;
+
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const progress = Math.round((event.loaded / event.total) * 100);
+            setMessages(prev => {
+              const idx = prev.findIndex(m => m.id === msgId);
+              if (idx === -1) return prev;
+              if (prev[idx].uploadProgress === progress) return prev;
+              const next = [...prev];
+              next[idx] = { ...next[idx], uploadProgress: progress };
+              return next;
+            });
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            reject(new Error("Upload failed"));
+          }
+        };
+
+        xhr.onerror = () => reject(new Error("Network Error"));
+        xhr.send(formData);
       });
-      if (!res.ok) {
-        setMessages(prev => {
-          const idx = prev.findIndex(m => m.id === msgId);
-          if (idx === -1) return prev;
-          const next = [...prev];
-          next[idx] = { ...next[idx], pending: false, failed: true };
-          return next;
-        });
-        URL.revokeObjectURL(placeholderUrl);
-        return;
-      }
-      const data = await res.json();
+
+      const data: any = await uploadPromise;
       
       sendMessage({
         type: "chat",

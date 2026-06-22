@@ -150,11 +150,37 @@ export const MessageBubble = React.memo(({
         </div>
       )}
       {msg.media?.map((m: any, i: number) => (
-        <div key={i} className="mb-2">
+        <div key={i} className="mb-2 relative">
           {m.type === 'image' ? (
             <img src={m.url} alt="media" className="rounded-lg max-w-full min-h-[200px] max-h-64 object-cover border border-white/10" />
           ) : (
             <a href={m.url} target="_blank" rel="noreferrer" className="block text-sm break-all underline decoration-current/30 underline-offset-4">{m.url}</a>
+          )}
+          {msg.uploadProgress !== undefined && msg.pending && (
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              className="absolute inset-0 rounded-lg overflow-hidden bg-black/50 backdrop-blur-[2px] flex items-center justify-center border border-white/10 z-10"
+            >
+               <div className="w-[80%] max-w-[180px] flex flex-col items-center">
+                 <div className="w-full flex justify-between items-end mb-2 px-1">
+                   <span className="text-white/90 text-xs font-medium tracking-wide">
+                     {msg.uploadProgress === 100 ? "Processing..." : "Uploading..."}
+                   </span>
+                   <span className="text-white font-bold text-xs tabular-nums">
+                     {msg.uploadProgress}%
+                   </span>
+                 </div>
+                 <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden relative shadow-inner shadow-black/50 border border-white/5">
+                   <motion.div 
+                     initial={{ width: 0 }}
+                     animate={{ width: `${msg.uploadProgress}%` }}
+                     transition={{ ease: "easeOut", duration: 0.2 }}
+                     className="absolute top-0 left-0 h-full bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-light)] rounded-full shadow-[0_0_10px_var(--color-accent)]"
+                   />
+                 </div>
+               </div>
+            </motion.div>
           )}
         </div>
       ))}
