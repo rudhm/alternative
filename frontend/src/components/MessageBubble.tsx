@@ -183,4 +183,12 @@ export const MessageBubble = React.memo(({
       )}
     </motion.div>
   );
+}, (prev, next) => {
+  return (
+    prev.msg === next.msg &&
+    prev.isGroupStart === next.isGroupStart &&
+    prev.isGroupEnd === next.isGroupEnd &&
+    prev.activeReactionId === next.activeReactionId &&
+    prev.isNew === next.isNew
+  );
 });

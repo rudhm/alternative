@@ -134,7 +134,7 @@ export function ChatRoom() {
         }
       }
 
-      newItems.push({ ...msg, isGroupStart, isGroupEnd });
+      newItems.push({ type: "message", originalMsg: msg, isGroupStart, isGroupEnd });
     });
 
     return newItems;
@@ -147,10 +147,11 @@ export function ChatRoom() {
       const item = items[index];
       if (item.type === "date_separator") return 40;
       let size = 60; // base size
-      if (item.media && item.media.length > 0) size += 200; // image estimate
-      if (item.replyTo) size += 40; // reply box estimate
-      if (item.content && item.content.length > 50) {
-        size += Math.floor((item.content.length - 50) / 40) * 20; // text wrap estimate
+      const msg = item.originalMsg || item;
+      if (msg.media && msg.media.length > 0) size += 200; // image estimate
+      if (msg.replyTo) size += 40; // reply box estimate
+      if (msg.content && msg.content.length > 50) {
+        size += Math.floor((msg.content.length - 50) / 40) * 20; // text wrap estimate
       }
       return size;
     },
@@ -338,8 +339,8 @@ export function ChatRoom() {
               );
             }
 
-            const isMe = item.authorId === userId;
-            const isNew = Date.now() - new Date(item.createdAt).getTime() < 5000;
+            const isMe = item.originalMsg.authorId === userId;
+            const isNew = Date.now() - new Date(item.originalMsg.createdAt).getTime() < 5000;
 
             return (
               <div
@@ -357,11 +358,11 @@ export function ChatRoom() {
                 )}
                 style={{
                   transform: `translateY(${vItem.start}px)`,
-                  zIndex: activeReactionId === item.id ? 400000 : 100000 - vItem.index,
+                  zIndex: activeReactionId === item.originalMsg?.id ? 400000 : 100000 - vItem.index,
                 }}
               >
                 <MessageBubble 
-                  msg={item}
+                  msg={item.originalMsg}
                   userId={userId}
                   isNew={isNew}
                   isGroupStart={item.isGroupStart}
