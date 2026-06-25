@@ -119,7 +119,7 @@ export const MessageBubble = React.memo(({
       
       {/* Desktop Hover Reply Button (isMe = false) */}
       {!isMe && (
-        <div className="hidden sm:flex opacity-0 group-hover:opacity-100 transition-opacity items-center px-1 mr-1 mb-5">
+        <div className={cn("hidden sm:flex opacity-0 group-hover:opacity-100 transition-opacity items-center px-1 mr-1", msg.reactions && msg.reactions.length > 0 ? "mb-5" : "")}>
           <button
             onClick={() => onSetReplyingTo(msg)}
             className="p-1.5 rounded-full text-[var(--color-text-muted)] hover:text-[var(--color-accent)] bg-[var(--color-surface-raised)]/50 hover:bg-[var(--color-surface-raised)] shadow-sm border border-transparent hover:border-[var(--color-border)] transition-all cursor-pointer"
@@ -139,8 +139,8 @@ export const MessageBubble = React.memo(({
             isOnlyEmoji ? "px-3 pb-1.5 pt-2 text-4xl hover:scale-105 transition-transform" : "px-3.5 py-2.5 text-[15px]",
             msg.reactions && msg.reactions.length > 0 && "mb-5",
             isMe 
-              ? cn("bg-gradient-to-br from-[var(--color-accent-light)] via-[var(--color-accent)] to-[var(--color-accent)] text-white rounded-[22px] shadow-[0_4px_14px_0_rgba(var(--color-accent-rgb),0.2)] border border-white/10 backdrop-blur-md", isGroupEnd && "rounded-br-[4px]", isGroupStart && "rounded-tr-[12px]") 
-              : cn("bg-[var(--color-surface-raised)]/90 backdrop-blur-md text-[var(--color-text)] border border-[var(--color-border-strong)]/60 rounded-[22px] shadow-sm", isGroupEnd && "rounded-bl-[4px]", isGroupStart && "rounded-tl-[12px]"),
+              ? cn("bg-gradient-to-br from-[var(--color-accent-light)] via-[var(--color-accent)] to-[var(--color-accent)] text-white rounded-[22px] shadow-[0_4px_14px_0_rgba(var(--color-accent-rgb),0.2)] border border-white/10 backdrop-blur-md", isGroupEnd && "rounded-br-[4px]", isGroupStart && "rounded-tr-[12px]", !isGroupStart && !isGroupEnd && "rounded-tr-[4px] rounded-br-[4px]") 
+              : cn("bg-[var(--color-surface-raised)]/90 backdrop-blur-md text-[var(--color-text)] border border-[var(--color-border-strong)]/60 rounded-[22px] shadow-sm", isGroupEnd && "rounded-bl-[4px]", isGroupStart && "rounded-tl-[12px]", !isGroupStart && !isGroupEnd && "rounded-tl-[4px] rounded-bl-[4px]"),
             msg.pending && "opacity-60",
             activeReactionId === msg.id && "ring-2 ring-[var(--color-accent)]/40"
           )}
@@ -277,13 +277,17 @@ export const MessageBubble = React.memo(({
                 onToggleReaction(msg.id, emoji);
               }}
               className={cn(
-                "flex items-center justify-center w-6 h-6 rounded-full text-[13px] shadow-sm border transition-transform active:scale-90",
+                "flex items-center justify-center h-6 rounded-full text-[13px] shadow-sm border transition-transform active:scale-90 gap-1",
+                data.count > 1 ? "px-1.5 min-w-[24px]" : "w-6",
                 data.me 
                   ? "bg-[var(--color-accent)] text-white border-[var(--color-accent)]" 
                   : "bg-[var(--color-surface)] text-[var(--color-text)] border-[var(--color-border)]"
               )}
             >
               <span className="leading-none transform translate-y-[0.5px]">{emoji}</span>
+              {data.count > 1 && (
+                <span className="text-[11px] font-semibold leading-none">{data.count}</span>
+              )}
             </button>
           ))}
         </div>
@@ -291,7 +295,7 @@ export const MessageBubble = React.memo(({
     </div>
         
         {/* Timestamp and Status Outside Bubble */}
-        <div className={cn("flex items-center gap-1 mt-1 mb-1 text-[10px] text-[var(--color-text-muted)] font-medium", isMe ? "mr-1" : "ml-1")}>
+        <div className={cn("flex items-center gap-1 mt-1 mb-1 text-[10px] text-[var(--color-text-muted)] font-medium", isMe ? "mr-1" : "ml-1", !isGroupEnd && "invisible")}>
           <span>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
           {isMe && (
             <span className="flex items-center ml-0.5 text-[12px]">
@@ -318,7 +322,7 @@ export const MessageBubble = React.memo(({
 
       {/* Desktop Hover Reply Button (isMe = true) */}
       {isMe && (
-        <div className="hidden sm:flex opacity-0 group-hover:opacity-100 transition-opacity items-center px-1 ml-1 mb-5">
+        <div className={cn("hidden sm:flex opacity-0 group-hover:opacity-100 transition-opacity items-center px-1 ml-1", msg.reactions && msg.reactions.length > 0 ? "mb-5" : "")}>
           <button
             onClick={() => onSetReplyingTo(msg)}
             className="p-1.5 rounded-full text-[var(--color-text-muted)] hover:text-[var(--color-accent)] bg-[var(--color-surface-raised)]/50 hover:bg-[var(--color-surface-raised)] shadow-sm border border-transparent hover:border-[var(--color-border)] transition-all cursor-pointer"

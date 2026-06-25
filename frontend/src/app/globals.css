@@ -8,6 +8,7 @@
   --color-accent-light: #f35fb3;
   --color-accent-muted: rgba(217, 17, 143, 0.11);
   --color-accent-glow: rgba(217, 17, 143, 0.18);
+  --color-accent-rgb: 217, 17, 143;
 
   /* Danger */
   --color-danger: #dc2626;
@@ -117,6 +118,7 @@
 
   --color-background: #111014;
   --color-foreground: #f5f0f4;
+  --color-accent-rgb: 217, 17, 143;
 }
 
 @keyframes slideUpFade {
