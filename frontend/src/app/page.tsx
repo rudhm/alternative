@@ -186,7 +186,6 @@ export default function Home() {
             <p className="mt-4 text-rose-200/50 text-xs tracking-widest uppercase animate-pulse">Decrypting Protocol</p>
           </motion.div>
         ) : (
-        {/* Inner Glow Card */}
       <motion.div
         key="login-card"
         initial={{ opacity: 0, y: 20, scale: 0.98 }}

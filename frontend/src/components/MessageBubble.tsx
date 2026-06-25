@@ -1,7 +1,10 @@
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { RotateCcw, Reply } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ImageLightbox } from "./ImageLightbox";
 
 interface MessageBubbleProps {
   msg: any;
@@ -30,6 +33,7 @@ export const MessageBubble = React.memo(({
   onToggleReaction,
   onVibrate,
 }: MessageBubbleProps) => {
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const isMe = msg.authorId === userId;
   const isOnlyEmoji = msg.content && /^[\p{Emoji_Presentation}\p{Extended_Pictographic}\s]+$/u.test(msg.content);
 
@@ -117,11 +121,11 @@ export const MessageBubble = React.memo(({
       className={cn(
         "max-w-[82%] sm:max-w-[72%] leading-relaxed relative cursor-pointer will-change-transform",
         isNew && "animate-enter",
-        isOnlyEmoji ? "px-3 pb-1.5 pt-2 text-4xl" : "px-3.5 py-2.5 text-[15px]",
+        isOnlyEmoji ? "px-3 pb-1.5 pt-2 text-4xl hover:scale-105 transition-transform" : "px-3.5 py-2.5 text-[15px]",
         msg.reactions && msg.reactions.length > 0 && "mb-5",
         isMe 
-          ? cn("bg-gradient-to-br from-[var(--color-accent-light)] to-[var(--color-accent)] text-white rounded-[22px] shadow-sm", isGroupEnd && "rounded-br-[4px]", isGroupStart && "rounded-tr-[12px]") 
-          : cn("bg-[var(--color-surface-raised)] text-[var(--color-text)] border border-[var(--color-border-strong)] rounded-[22px] shadow-sm", isGroupEnd && "rounded-bl-[4px]", isGroupStart && "rounded-tl-[12px]"),
+          ? cn("bg-gradient-to-br from-[var(--color-accent-light)] via-[var(--color-accent)] to-[var(--color-accent)] text-white rounded-[22px] shadow-[0_4px_14px_0_rgba(var(--color-accent-rgb),0.2)] border border-white/10 backdrop-blur-md", isGroupEnd && "rounded-br-[4px]", isGroupStart && "rounded-tr-[12px]") 
+          : cn("bg-[var(--color-surface-raised)]/90 backdrop-blur-md text-[var(--color-text)] border border-[var(--color-border-strong)]/60 rounded-[22px] shadow-sm", isGroupEnd && "rounded-bl-[4px]", isGroupStart && "rounded-tl-[12px]"),
         msg.pending && "opacity-60",
         activeReactionId === msg.id && "ring-2 ring-[var(--color-accent)]/40"
       )}
@@ -168,7 +172,22 @@ export const MessageBubble = React.memo(({
                   Image expired or unavailable
                 </div>
               ) : (
-                <img src={mediaUrl} alt="media" className="rounded-lg max-w-full min-h-[200px] max-h-64 object-cover" />
+                <>
+                  <img 
+                    src={mediaUrl} 
+                    alt="media" 
+                    className="rounded-lg max-w-full min-h-[200px] max-h-64 object-cover cursor-zoom-in active:scale-[0.98] transition-transform"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLightboxUrl(mediaUrl);
+                    }}
+                  />
+                  <ImageLightbox
+                    src={lightboxUrl || ""}
+                    isOpen={lightboxUrl === mediaUrl}
+                    onClose={() => setLightboxUrl(null)}
+                  />
+                </>
               )
             ) : (
               <a href={mediaUrl} target="_blank" rel="noreferrer" className="block text-sm break-all underline decoration-current/30 underline-offset-4">{mediaUrl}</a>
@@ -203,7 +222,29 @@ export const MessageBubble = React.memo(({
         );
       })}
       <div className="flex flex-row items-end justify-between gap-3 mt-0.5 min-w-0">
-        <p className="break-words whitespace-pre-wrap min-w-0">{msg.content}</p>
+        <div className="break-words min-w-0">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              p: ({node, ...props}) => <p className="whitespace-pre-wrap m-0" {...props} />,
+              a: ({node, ...props}) => <a className="underline decoration-current/30 underline-offset-4 hover:decoration-current break-all" target="_blank" rel="noreferrer" {...props} />,
+              code: ({node, inline, className, children, ...props}: any) => 
+                inline ? (
+                  <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>
+                ) : (
+                  <pre className="bg-black/20 dark:bg-white/10 p-2 rounded-md overflow-x-auto text-sm font-mono my-1" {...props}>
+                    <code className={className}>{children}</code>
+                  </pre>
+                ),
+              ul: ({node, ...props}) => <ul className="list-disc pl-4 my-1" {...props} />,
+              ol: ({node, ...props}) => <ol className="list-decimal pl-4 my-1" {...props} />,
+              li: ({node, ...props}) => <li className="my-0.5" {...props} />,
+              blockquote: ({node, ...props}) => <blockquote className="border-l-2 border-current/30 pl-2 italic my-1 opacity-90" {...props} />,
+            }}
+          >
+            {msg.content}
+          </ReactMarkdown>
+        </div>
         <div className={cn("flex items-center text-xs space-x-1 font-medium flex-shrink-0 pt-1", isMe ? "text-white/70" : "text-[var(--color-text-muted)]")}>
           <span>
             {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
