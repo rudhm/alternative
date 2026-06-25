@@ -191,8 +191,8 @@ export function ChatRoom() {
   }, [items.length, virtualizer]);
 
   return (
-    <div className="flex flex-col h-[100dvh] w-full bg-[var(--color-bg)] overflow-hidden relative text-[var(--color-text)] transition-colors duration-300">
-      <div className="absolute top-0 w-full bg-[var(--color-bg)]/95 px-4 h-16 flex items-center justify-between z-[200000] border-b border-[var(--color-border)]/50 transition-colors duration-300">
+    <div className="flex flex-col h-[100dvh] w-full bg-[var(--color-bg)] overflow-hidden text-[var(--color-text)] transition-colors duration-300">
+      <div className="w-full shrink-0 bg-[var(--color-bg)] px-4 h-16 flex items-center justify-between z-[200000] border-b border-[var(--color-border)]/50 transition-colors duration-300 shadow-sm relative">
         <div className="flex items-center space-x-3">
           <div className="relative">
             {otherStatus === "online" && (
@@ -312,7 +312,7 @@ export function ChatRoom() {
 
       <div 
         ref={parentRef}
-        className="flex-1 overflow-y-auto px-1 sm:px-2 pt-[76px] pb-2 select-none [-webkit-touch-callout:none]" style={{ overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}
+        className="flex-1 overflow-y-auto px-1 sm:px-2 pt-2 pb-2 select-none [-webkit-touch-callout:none]" style={{ overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}
         onScroll={handleScroll}
       >
         {isLoadingMore && (
