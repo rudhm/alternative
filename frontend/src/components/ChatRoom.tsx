@@ -155,7 +155,7 @@ export function ChatRoom() {
       }
       return size;
     },
-    overscan: 15,
+    overscan: 5,
   });
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
@@ -192,7 +192,7 @@ export function ChatRoom() {
 
   return (
     <div className="flex flex-col h-[100dvh] w-full bg-[var(--color-bg)] overflow-hidden relative text-[var(--color-text)] transition-colors duration-300">
-      <div className="absolute top-0 w-full bg-[var(--color-bg)]/60 backdrop-blur-xl px-4 h-16 flex items-center justify-between z-[200000] border-b border-[var(--color-border)]/50 transition-colors duration-300">
+      <div className="absolute top-0 w-full bg-[var(--color-bg)]/95 px-4 h-16 flex items-center justify-between z-[200000] border-b border-[var(--color-border)]/50 transition-colors duration-300">
         <div className="flex items-center space-x-3">
           <div className="relative">
             {otherStatus === "online" && (
