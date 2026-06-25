@@ -117,8 +117,8 @@ export const MessageBubble = React.memo(({
   return (
     <div className={cn("relative flex group items-end w-full max-w-full", isMe ? "justify-end" : "justify-start")}>
       
-      {/* Desktop Hover Reply Button (isMe = false) */}
-      {!isMe && (
+      {/* Desktop Hover Reply Button (isMe = true) */}
+      {isMe && (
         <div className={cn("hidden sm:flex opacity-0 group-hover:opacity-100 transition-opacity items-center px-1 mr-1", msg.reactions && msg.reactions.length > 0 ? "mb-5" : "")}>
           <button
             onClick={() => onSetReplyingTo(msg)}
@@ -322,8 +322,8 @@ export const MessageBubble = React.memo(({
         )}
       </div>
 
-      {/* Desktop Hover Reply Button (isMe = true) */}
-      {isMe && (
+      {/* Desktop Hover Reply Button (isMe = false) */}
+      {!isMe && (
         <div className={cn("hidden sm:flex opacity-0 group-hover:opacity-100 transition-opacity items-center px-1 ml-1", msg.reactions && msg.reactions.length > 0 ? "mb-5" : "")}>
           <button
             onClick={() => onSetReplyingTo(msg)}
