@@ -134,13 +134,13 @@ export const MessageBubble = React.memo(({
         <div 
           ref={bubbleRef}
           className={cn(
-            "leading-relaxed relative cursor-pointer will-change-transform max-w-full",
+            "leading-relaxed relative cursor-pointer max-w-full",
             isNew && "animate-enter",
             isOnlyEmoji ? "px-3 pb-1.5 pt-2 text-4xl hover:scale-105 transition-transform" : "px-3.5 py-2.5 text-[15px]",
             msg.reactions && msg.reactions.length > 0 && "mb-5",
             isMe 
-              ? cn("bg-gradient-to-br from-[var(--color-accent-light)] via-[var(--color-accent)] to-[var(--color-accent)] text-white rounded-[22px] shadow-[0_4px_14px_0_rgba(var(--color-accent-rgb),0.2)] border border-white/10 backdrop-blur-md", isGroupEnd && "rounded-br-[4px]", isGroupStart && "rounded-tr-[12px]", !isGroupStart && !isGroupEnd && "rounded-tr-[4px] rounded-br-[4px]") 
-              : cn("bg-[var(--color-surface-raised)]/90 backdrop-blur-md text-[var(--color-text)] border border-[var(--color-border-strong)]/60 rounded-[22px] shadow-sm", isGroupEnd && "rounded-bl-[4px]", isGroupStart && "rounded-tl-[12px]", !isGroupStart && !isGroupEnd && "rounded-tl-[4px] rounded-bl-[4px]"),
+              ? cn("bg-gradient-to-br from-[var(--color-accent-light)] via-[var(--color-accent)] to-[var(--color-accent)] text-white rounded-[22px] shadow-[0_4px_14px_0_rgba(var(--color-accent-rgb),0.2)] border border-white/10", isGroupEnd && "rounded-br-[4px]", isGroupStart && "rounded-tr-[12px]", !isGroupStart && !isGroupEnd && "rounded-tr-[4px] rounded-br-[4px]") 
+              : cn("bg-[var(--color-surface-raised)]/90 text-[var(--color-text)] border border-[var(--color-border-strong)]/60 rounded-[22px] shadow-sm", isGroupEnd && "rounded-bl-[4px]", isGroupStart && "rounded-tl-[12px]", !isGroupStart && !isGroupEnd && "rounded-tl-[4px] rounded-bl-[4px]"),
             msg.pending && "opacity-60",
             activeReactionId === msg.id && "ring-2 ring-[var(--color-accent)]/40"
           )}
