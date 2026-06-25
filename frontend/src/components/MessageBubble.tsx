@@ -115,20 +115,35 @@ export const MessageBubble = React.memo(({
   }, [handlePressEnd, msg, onSetReplyingTo, onVibrate]);
 
   return (
-    <div className={cn("relative flex group items-center w-full max-w-full", isMe ? "justify-end" : "justify-start")}>
-    <div 
-      ref={bubbleRef}
-      className={cn(
-        "max-w-[82%] sm:max-w-[72%] leading-relaxed relative cursor-pointer will-change-transform",
-        isNew && "animate-enter",
-        isOnlyEmoji ? "px-3 pb-1.5 pt-2 text-4xl hover:scale-105 transition-transform" : "px-3.5 py-2.5 text-[15px]",
-        msg.reactions && msg.reactions.length > 0 && "mb-5",
-        isMe 
-          ? cn("bg-gradient-to-br from-[var(--color-accent-light)] via-[var(--color-accent)] to-[var(--color-accent)] text-white rounded-[22px] shadow-[0_4px_14px_0_rgba(var(--color-accent-rgb),0.2)] border border-white/10 backdrop-blur-md", isGroupEnd && "rounded-br-[4px]", isGroupStart && "rounded-tr-[12px]") 
-          : cn("bg-[var(--color-surface-raised)]/90 backdrop-blur-md text-[var(--color-text)] border border-[var(--color-border-strong)]/60 rounded-[22px] shadow-sm", isGroupEnd && "rounded-bl-[4px]", isGroupStart && "rounded-tl-[12px]"),
-        msg.pending && "opacity-60",
-        activeReactionId === msg.id && "ring-2 ring-[var(--color-accent)]/40"
+    <div className={cn("relative flex group items-end w-full max-w-full", isMe ? "justify-end" : "justify-start")}>
+      
+      {/* Desktop Hover Reply Button (isMe = false) */}
+      {!isMe && (
+        <div className="hidden sm:flex opacity-0 group-hover:opacity-100 transition-opacity items-center px-1 mr-1 mb-5">
+          <button
+            onClick={() => onSetReplyingTo(msg)}
+            className="p-1.5 rounded-full text-[var(--color-text-muted)] hover:text-[var(--color-accent)] bg-[var(--color-surface-raised)]/50 hover:bg-[var(--color-surface-raised)] shadow-sm border border-transparent hover:border-[var(--color-border)] transition-all cursor-pointer"
+            title="Reply"
+          >
+            <Reply size={15} />
+          </button>
+        </div>
       )}
+
+      <div className={cn("flex flex-col w-full max-w-[82%] sm:max-w-[72%]", isMe ? "items-end" : "items-start")}>
+        <div 
+          ref={bubbleRef}
+          className={cn(
+            "leading-relaxed relative cursor-pointer will-change-transform max-w-full",
+            isNew && "animate-enter",
+            isOnlyEmoji ? "px-3 pb-1.5 pt-2 text-4xl hover:scale-105 transition-transform" : "px-3.5 py-2.5 text-[15px]",
+            msg.reactions && msg.reactions.length > 0 && "mb-5",
+            isMe 
+              ? cn("bg-gradient-to-br from-[var(--color-accent-light)] via-[var(--color-accent)] to-[var(--color-accent)] text-white rounded-[22px] shadow-[0_4px_14px_0_rgba(var(--color-accent-rgb),0.2)] border border-white/10 backdrop-blur-md", isGroupEnd && "rounded-br-[4px]", isGroupStart && "rounded-tr-[12px]") 
+              : cn("bg-[var(--color-surface-raised)]/90 backdrop-blur-md text-[var(--color-text)] border border-[var(--color-border-strong)]/60 rounded-[22px] shadow-sm", isGroupEnd && "rounded-bl-[4px]", isGroupStart && "rounded-tl-[12px]"),
+            msg.pending && "opacity-60",
+            activeReactionId === msg.id && "ring-2 ring-[var(--color-accent)]/40"
+          )}
       onContextMenu={(e) => {
         e.preventDefault();
         onVibrate([20]);
@@ -221,55 +236,28 @@ export const MessageBubble = React.memo(({
         </div>
         );
       })}
-      <div className="flex flex-row items-end justify-between gap-3 mt-0.5 min-w-0">
-        <div className="break-words min-w-0">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              p: ({node, ...props}) => <p className="whitespace-pre-wrap m-0" {...props} />,
-              a: ({node, ...props}) => <a className="underline decoration-current/30 underline-offset-4 hover:decoration-current break-all" target="_blank" rel="noreferrer" {...props} />,
-              code: ({node, inline, className, children, ...props}: any) => 
-                inline ? (
-                  <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>
-                ) : (
-                  <pre className="bg-black/20 dark:bg-white/10 p-2 rounded-md overflow-x-auto text-sm font-mono my-1" {...props}>
-                    <code className={className}>{children}</code>
-                  </pre>
-                ),
-              ul: ({node, ...props}) => <ul className="list-disc pl-4 my-1" {...props} />,
-              ol: ({node, ...props}) => <ol className="list-decimal pl-4 my-1" {...props} />,
-              li: ({node, ...props}) => <li className="my-0.5" {...props} />,
-              blockquote: ({node, ...props}) => <blockquote className="border-l-2 border-current/30 pl-2 italic my-1 opacity-90" {...props} />,
-            }}
-          >
-            {msg.content}
-          </ReactMarkdown>
-        </div>
-        <div className={cn("flex items-center text-xs space-x-1 font-medium flex-shrink-0 pt-1", isMe ? "text-white/70" : "text-[var(--color-text-muted)]")}>
-          <span>
-            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </span>
-          {isMe && (
-            <span className="flex items-center ml-0.5 text-xs">
-              {msg.failed ? (
-                <button
-                  onClick={(e) => { e.stopPropagation(); onRetryMessage(msg); }}
-                  aria-label="Retry sending message"
-                  className="flex items-center space-x-0.5 text-red-300 hover:text-white transition-colors"
-                >
-                  <RotateCcw size={10} />
-                  <span className="text-xs">Failed</span>
-                </button>
-              ) : msg.pending ? (
-                <span className="opacity-70">◷</span>
-              ) : msg.readReceipt ? (
-                <motion.span key="read" initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 30 }} className="text-white font-bold leading-none">✓✓</motion.span>
+      <div className="break-words min-w-0 mt-0.5">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            p: ({node, ...props}) => <p className="whitespace-pre-wrap m-0" {...props} />,
+            a: ({node, ...props}) => <a className="underline decoration-current/30 underline-offset-4 hover:decoration-current break-all" target="_blank" rel="noreferrer" {...props} />,
+            code: ({node, inline, className, children, ...props}: any) => 
+              inline ? (
+                <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>
               ) : (
-                <motion.span key="sent" initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 30 }} className="opacity-70 leading-none">✓</motion.span>
-              )}
-            </span>
-          )}
-        </div>
+                <pre className="bg-black/20 dark:bg-white/10 p-2 rounded-md overflow-x-auto text-sm font-mono my-1" {...props}>
+                  <code className={className}>{children}</code>
+                </pre>
+              ),
+            ul: ({node, ...props}) => <ul className="list-disc pl-4 my-1" {...props} />,
+            ol: ({node, ...props}) => <ol className="list-decimal pl-4 my-1" {...props} />,
+            li: ({node, ...props}) => <li className="my-0.5" {...props} />,
+            blockquote: ({node, ...props}) => <blockquote className="border-l-2 border-current/30 pl-2 italic my-1 opacity-90" {...props} />,
+          }}
+        >
+          {msg.content}
+        </ReactMarkdown>
       </div>
 
       {msg.reactions && msg.reactions.length > 0 && (
@@ -301,20 +289,45 @@ export const MessageBubble = React.memo(({
         </div>
       )}
     </div>
-    
-    {/* Desktop Hover Reply Button */}
-    <div className={cn(
-      "hidden sm:flex opacity-0 group-hover:opacity-100 transition-opacity items-center px-1",
-      isMe ? "order-first" : "order-last"
-    )}>
-      <button
-        onClick={() => onSetReplyingTo(msg)}
-        className="p-1.5 rounded-full text-[var(--color-text-muted)] hover:text-[var(--color-accent)] bg-[var(--color-surface-raised)]/50 hover:bg-[var(--color-surface-raised)] shadow-sm border border-transparent hover:border-[var(--color-border)] transition-all cursor-pointer"
-        title="Reply"
-      >
-        <Reply size={15} />
-      </button>
-    </div>
+        
+        {/* Timestamp and Status Outside Bubble */}
+        <div className={cn("flex items-center gap-1 mt-1 mb-1 text-[10px] text-[var(--color-text-muted)] font-medium", isMe ? "mr-1" : "ml-1")}>
+          <span>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+          {isMe && (
+            <span className="flex items-center ml-0.5 text-[12px]">
+              {msg.failed ? (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onRetryMessage(msg); }}
+                  aria-label="Retry sending message"
+                  className="flex items-center space-x-0.5 text-red-500 hover:text-red-400 transition-colors"
+                >
+                  <RotateCcw size={10} />
+                  <span className="text-[10px]">Failed</span>
+                </button>
+              ) : msg.pending ? (
+                <span className="opacity-70 text-[var(--color-text-muted)]">◷</span>
+              ) : msg.readReceipt ? (
+                <motion.span key="read" initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 30 }} className="text-[var(--color-accent)] font-bold leading-none">✓✓</motion.span>
+              ) : (
+                <motion.span key="sent" initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 30 }} className="opacity-70 leading-none">✓</motion.span>
+              )}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop Hover Reply Button (isMe = true) */}
+      {isMe && (
+        <div className="hidden sm:flex opacity-0 group-hover:opacity-100 transition-opacity items-center px-1 ml-1 mb-5">
+          <button
+            onClick={() => onSetReplyingTo(msg)}
+            className="p-1.5 rounded-full text-[var(--color-text-muted)] hover:text-[var(--color-accent)] bg-[var(--color-surface-raised)]/50 hover:bg-[var(--color-surface-raised)] shadow-sm border border-transparent hover:border-[var(--color-border)] transition-all cursor-pointer"
+            title="Reply"
+          >
+            <Reply size={15} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }, (prev, next) => {
