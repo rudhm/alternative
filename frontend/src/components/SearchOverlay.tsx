@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Loader2, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function SearchOverlay({ isOpen, onClose, onResultClick }: { isOpen: boolean, onClose: () => void, onResultClick: (msg: any) => void }) {
+export function SearchOverlay({ isOpen, onClose, onResultClick, token }: { isOpen: boolean, onClose: () => void, onResultClick: (msg: any) => void, token: string | null }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +25,13 @@ export function SearchOverlay({ isOpen, onClose, onResultClick }: { isOpen: bool
       setIsLoading(true);
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://rudhasi.mooo.com";
-        const res = await fetch(`${apiUrl}/api/messages/search?q=${encodeURIComponent(query)}`, { credentials: "include" });
+        const headers: HeadersInit = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        
+        const res = await fetch(`${apiUrl}/api/messages/search?q=${encodeURIComponent(query)}`, { 
+          headers,
+          credentials: "include" 
+        });
         if (res.ok) {
           const data = await res.json();
           setResults(data.messages || []);

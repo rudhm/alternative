@@ -315,6 +315,7 @@ export function ChatRoom() {
             setSearchTargetId(msg.id);
           }
         }} 
+        token={token}
       />
 
       {activeReactionId && (
