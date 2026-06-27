@@ -15,7 +15,7 @@ export function FolderView({ folder, onBack }: { folder: Folder, onBack: () => v
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newItemTitle.trim()) return;
+    if (!newItemTitle.trim() || isCreating === 'none') return;
 
     let initialContent = '';
     if (isCreating === 'todo') {
