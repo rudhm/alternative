@@ -15,11 +15,8 @@ jobs:
           key: ${{ secrets.ORACLE_SSH_KEY }}
           script: |
             set -e
-            echo "=== Downloading backup from Cloudflare R2 ==="
-            export WRANGLER_SEND_METRICS=false
-            
-            # Fetch the backup file using the local wrangler credentials
-            npx wrangler@latest r2 object get chat-backups/backup-2026-06-25_03-00-01.tar.gz --file /tmp/backup.tar.gz
+            echo "=== Downloading backup from Cloudflare Worker ==="
+            curl -o /tmp/backup.tar.gz -L https://r2-lister.unrudh.workers.dev
             
             echo "=== Extracting backup ==="
             rm -rf /tmp/backup_extract
