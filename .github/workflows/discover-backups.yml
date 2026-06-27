@@ -1,0 +1,28 @@
+name: Discover Backups
+
+on:
+  workflow_dispatch:
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - name: List local Oracle backups
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USERNAME }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          script: |
+            echo "=== Backups on Oracle Block Volume (/backup) ==="
+            sudo ls -la /backup || echo "/backup directory not found!"
+            
+            echo ""
+            echo "=== Checking for rclone configs (for R2) ==="
+            cat ~/.config/rclone/rclone.conf 2>/dev/null || echo "No rclone config found for ubuntu user."
+            sudo cat /root/.config/rclone/rclone.conf 2>/dev/null || echo "No rclone config found for root."
+            
+            echo ""
+            echo "=== Trying to list AWS CLI configs (for R2) ==="
+            cat ~/.aws/credentials 2>/dev/null || echo "No AWS config found for ubuntu user."
+            sudo cat /root/.aws/credentials 2>/dev/null || echo "No AWS config found for root user."
