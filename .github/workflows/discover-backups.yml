@@ -14,15 +14,26 @@ jobs:
           username: ${{ secrets.ORACLE_USERNAME }}
           key: ${{ secrets.ORACLE_SSH_KEY }}
           script: |
-            echo "=== Backups on Oracle Block Volume (/backup) ==="
-            sudo ls -la /backup || echo "/backup directory not found!"
+            echo "=== Mounted Volumes (df -h) ==="
+            df -h
             
-            echo ""
-            echo "=== Checking for rclone configs (for R2) ==="
-            cat ~/.config/rclone/rclone.conf 2>/dev/null || echo "No rclone config found for ubuntu user."
-            sudo cat /root/.config/rclone/rclone.conf 2>/dev/null || echo "No rclone config found for root."
+            echo "=== Block Devices (lsblk) ==="
+            lsblk
             
-            echo ""
-            echo "=== Trying to list AWS CLI configs (for R2) ==="
-            cat ~/.aws/credentials 2>/dev/null || echo "No AWS config found for ubuntu user."
-            sudo cat /root/.aws/credentials 2>/dev/null || echo "No AWS config found for root user."
+            echo "=== Searching for Block Volume Mounts ==="
+            sudo find /mnt /media -maxdepth 2 -type d 2>/dev/null
+            
+            echo "=== Searching entire system for backup files (*.tar.gz.enc or *db*.sql) ==="
+            sudo find / -name "*.tar.gz.enc" -o -name "*db*.sql" -o -name "*backup*.sql" 2>/dev/null | grep -v "/proc\|/sys\|/overlay" || echo "No backup files found."
+            
+            echo "=== Checking for OCI CLI ==="
+            if command -v oci &> /dev/null; then
+              echo "OCI CLI found! Checking configs..."
+              ls -la ~/.oci 2>/dev/null || echo "No ~/.oci found for ubuntu"
+              sudo ls -la /root/.oci 2>/dev/null || echo "No ~/.oci found for root"
+            else
+              echo "OCI CLI not installed."
+            fi
+            
+            echo "=== Checking for Cloudflare/AWS/Rclone/Wrangler configs ==="
+            sudo find /home /root -name "rclone.conf" -o -name "credentials" -o -name ".wrangler" 2>/dev/null
