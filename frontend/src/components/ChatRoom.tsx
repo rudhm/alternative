@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { MessageBubble } from "./MessageBubble";
 import { MessageInputBar } from "./MessageInputBar";
+import { Sidebar } from "./Sidebar";
 import { vibrate } from "@/lib/vibrate";
 
 import { useMessages } from "@/hooks/useMessages";
@@ -21,6 +22,7 @@ const EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
 export function ChatRoom() {
   const { userId, status, onMessage, sendMessage, token } = useWs();
   const [isDark, setIsDark] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const defaultOtherName = userId === "Hasi" ? "Rudh" : "Hasi";
   const [customOtherName, setCustomOtherName] = useState(defaultOtherName);
@@ -191,8 +193,15 @@ export function ChatRoom() {
   }, [items.length, virtualizer]);
 
   return (
-    <div className="flex flex-col h-[100dvh] w-full bg-[var(--color-bg)] overflow-hidden text-[var(--color-text)] transition-colors duration-300">
-      <div className="w-full shrink-0 bg-[var(--color-bg)] px-4 h-16 flex items-center justify-between z-[200000] border-b border-[var(--color-border)]/50 transition-colors duration-300 shadow-sm relative">
+    <div className="flex h-[100dvh] w-full bg-[var(--color-bg)] overflow-hidden relative">
+      <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
+      <div 
+        className={cn(
+          "flex flex-col h-[100dvh] w-full text-[var(--color-text)] transition-all duration-300 relative",
+          isSidebarOpen ? "sm:ml-[360px]" : "ml-0"
+        )}
+      >
+        <div className="w-full shrink-0 bg-[var(--color-bg)] px-4 h-16 flex items-center justify-between z-[200000] border-b border-[var(--color-border)]/50 transition-colors duration-300 shadow-sm relative">
         <div className="flex items-center space-x-3">
           <div className="relative">
             {otherStatus === "online" && (
@@ -416,6 +425,7 @@ export function ChatRoom() {
         onFileUpload={handleFileUpload}
         onFocus={scrollToBottom}
       />
+      </div>
     </div>
   );
 }
