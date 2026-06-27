@@ -1,19 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { ExternalLink } from 'lucide-react';
 
+const previewCache: Record<string, { title: string, description: string, image: string, url: string }> = {};
+
 export function LinkPreview({ url }: { url: string }) {
   const [data, setData] = useState<{ title: string, description: string, image: string, url: string } | null>(null);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
+    if (previewCache[url]) {
+      setData(previewCache[url]);
+      return;
+    }
     const fetchPreview = async () => {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://rudhasi.mooo.com";
         const res = await fetch(`${apiUrl}/api/link-preview?url=${encodeURIComponent(url)}`, { credentials: "include" });
         if (res.ok) {
           const json = await res.json();
-          if (isMounted) setData(json);
+          if (isMounted) {
+            previewCache[url] = json;
+            setData(json);
+          }
         } else {
           if (isMounted) setError(true);
         }

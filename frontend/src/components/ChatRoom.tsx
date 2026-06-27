@@ -467,6 +467,7 @@ export function ChatRoom() {
         onSend={handleSend}
         onTyping={handleTyping}
         onFileUpload={handleFileUpload}
+        onUploadFiles={uploadFiles}
         onFocus={scrollToBottom}
       />
       </div>

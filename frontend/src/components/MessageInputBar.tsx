@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Paperclip, X, Smile } from "lucide-react";
+import { Send, Paperclip, X, Smile, Mic, Square } from "lucide-react";
 import EmojiPicker, { Theme } from 'emoji-picker-react';
 import { cn } from "@/lib/utils";
 
@@ -10,6 +10,7 @@ interface MessageInputBarProps {
   onSend: (text: string) => void;
   onTyping: () => void;
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onUploadFiles: (files: File[]) => void;
   onFocus?: () => void;
 }
 
@@ -21,15 +22,53 @@ export const MessageInputBar = React.memo(({
   onSend,
   onTyping,
   onFileUpload,
+  onUploadFiles,
   onFocus,
 }: MessageInputBarProps) => {
   const [text, setText] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const myTypingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+      mediaRecorderRef.current.ondataavailable = e => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+      mediaRecorderRef.current.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const file = new File([audioBlob], `voice_${Date.now()}.webm`, { type: 'audio/webm' });
+        onUploadFiles([file]);
+      };
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+      setRecordingDuration(0);
+      recordingTimerRef.current = setInterval(() => setRecordingDuration(d => d + 1), 1000);
+    } catch (err) {
+      console.error("Microphone access denied", err);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      setIsRecording(false);
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+    }
+  };
+
 
   const handleSend = useCallback(() => {
     if (!text.trim()) return;
@@ -119,55 +158,80 @@ export const MessageInputBar = React.memo(({
             multiple
           />
           
-          <textarea
-            ref={textareaRef}
-            name="chatMessage"
-            id="chat-input"
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="none"
-            spellCheck={false}
-            data-1p-ignore="true"
-            data-lpignore="true"
-            rows={1}
-            className="flex-1 bg-transparent border-none outline-none focus:ring-0 focus-visible:outline-none px-2 text-[var(--color-text)] text-[15px] placeholder:text-[var(--color-text-muted)] py-2.5 min-w-0 resize-none max-h-[120px]"
-            style={{ boxShadow: 'none' }}
-            placeholder="Message..."
-            value={text}
-            onChange={handleInput}
-            onFocus={() => {
-              setIsFocused(true);
-              onFocus?.();
-            }}
-            onBlur={() => setIsFocused(false)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-          />
+          {isRecording ? (
+            <div className="flex-1 flex items-center justify-between px-4 py-2.5 min-w-0 max-h-[120px]">
+              <div className="flex items-center gap-2 text-red-500 animate-pulse">
+                <Mic size={16} />
+                <span className="text-sm font-semibold">{Math.floor(recordingDuration / 60)}:{(recordingDuration % 60).toString().padStart(2, '0')}</span>
+              </div>
+              <button 
+                onClick={stopRecording}
+                className="p-1 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
+              >
+                <Square size={16} fill="currentColor" />
+              </button>
+            </div>
+          ) : (
+            <textarea
+              ref={textareaRef}
+              name="chatMessage"
+              id="chat-input"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              data-1p-ignore="true"
+              data-lpignore="true"
+              rows={1}
+              className="flex-1 bg-transparent border-none outline-none focus:ring-0 focus-visible:outline-none px-2 text-[var(--color-text)] text-[15px] placeholder:text-[var(--color-text-muted)] py-2.5 min-w-0 resize-none max-h-[120px]"
+              style={{ boxShadow: 'none' }}
+              placeholder="Message..."
+              value={text}
+              onChange={handleInput}
+              onFocus={() => {
+                setIsFocused(true);
+                onFocus?.();
+              }}
+              onBlur={() => setIsFocused(false)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+            />
+          )}
 
+          {!text.trim() && !isRecording && (
+            <button 
+              aria-label="Voice Message"
+              className="w-10 h-10 flex items-center justify-center text-[var(--color-text-secondary)] hover:text-red-500 transition-colors active:scale-[0.94] flex-shrink-0 mb-0.5"
+              onClick={startRecording}
+            >
+              <Mic size={20} />
+            </button>
+          )}
 
-
-          <button 
-            onClick={handleSend}
-            onMouseDown={(e) => e.preventDefault()}
-            aria-label="Send message"
-            className={cn(
-              "w-9 h-9 ml-1 mb-1 rounded-full flex items-center justify-center transition-all flex-shrink-0 group relative overflow-hidden",
-              text.trim() ? "bg-[var(--color-accent)] text-white shadow-[var(--shadow-sm)] active:scale-90" : "text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] active:scale-[0.94]"
-            )}
-          >
-            {text.trim() && (
-              <motion.div 
-                layoutId="send-glow"
-                className="absolute inset-0 bg-white/20 blur-md rounded-full"
-                transition={{ duration: 0.2 }}
-              />
-            )}
-            <Send size={16} className={cn("relative z-10", text.trim() && "ml-0.5 group-active:translate-x-1 group-active:-translate-y-1 transition-transform duration-200")} />
-          </button>
+          {(!isRecording && text.trim()) && (
+            <button 
+              onClick={handleSend}
+              onMouseDown={(e) => e.preventDefault()}
+              aria-label="Send message"
+              className={cn(
+                "w-9 h-9 ml-1 mb-1 rounded-full flex items-center justify-center transition-all flex-shrink-0 group relative overflow-hidden",
+                text.trim() ? "bg-[var(--color-accent)] text-white shadow-[var(--shadow-sm)] active:scale-90" : "text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] active:scale-[0.94]"
+              )}
+            >
+              {text.trim() && (
+                <motion.div 
+                  layoutId="send-glow"
+                  className="absolute inset-0 bg-white/20 blur-md rounded-full"
+                  transition={{ duration: 0.2 }}
+                />
+              )}
+              <Send size={16} className={cn("relative z-10", text.trim() && "ml-0.5 group-active:translate-x-1 group-active:-translate-y-1 transition-transform duration-200")} />
+            </button>
+          )}
         </div>
       </div>
       <AnimatePresence>

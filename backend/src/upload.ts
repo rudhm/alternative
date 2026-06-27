@@ -1,6 +1,7 @@
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import sharp from 'sharp';
 // Dynamic import used for file-type
 
 export const uploadDir = path.join(process.cwd(), 'uploads');
@@ -35,8 +36,19 @@ export const processMedia = async (file: Express.Multer.File): Promise<{ url: st
   const outPath = path.join(uploadDir, outFilename);
 
   try {
-    fs.writeFileSync(outPath, file.buffer);
-    return { url: `/uploads/${outFilename}`, type };
+    if (type === 'image' && ext !== '.gif') {
+      const processedBuffer = await sharp(file.buffer)
+        .resize(1920, 1920, { fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toBuffer();
+      const webpFilename = `${filename}.webp`;
+      const webpPath = path.join(uploadDir, webpFilename);
+      fs.writeFileSync(webpPath, processedBuffer);
+      return { url: `/uploads/${webpFilename}`, type };
+    } else {
+      fs.writeFileSync(outPath, file.buffer);
+      return { url: `/uploads/${outFilename}`, type };
+    }
   } catch (err) {
     if (fs.existsSync(outPath)) {
       fs.unlinkSync(outPath);

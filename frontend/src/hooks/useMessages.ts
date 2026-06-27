@@ -313,10 +313,8 @@ export function useMessages({
     }, 5000);
   }, [sendMessage, token]);
 
-  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+  const uploadFiles = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
-    e.target.value = '';
 
     const msgId = crypto.randomUUID();
     const mediaPlaceholders = files.map(file => ({
@@ -351,7 +349,6 @@ export function useMessages({
           if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
           xhr.withCredentials = true;
 
-          // For simplicity, we only track progress for the first file to show a bar
           if (file === files[0]) {
             xhr.upload.onprogress = (event) => {
               if (event.lengthComputable) {
@@ -404,6 +401,13 @@ export function useMessages({
     }
   }, [sendMessage, userId, token, isAtBottom]);
 
+  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    uploadFiles(files);
+  }, [uploadFiles]);
+
+
   return {
     messages,
     isLoadingMore,
@@ -417,5 +421,6 @@ export function useMessages({
     handleSend,
     retryMessage,
     handleFileUpload,
+    uploadFiles,
   };
 }
