@@ -1,0 +1,21 @@
+name: Get Backend Logs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  logs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Logs
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USERNAME }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          script: |
+            echo "=== Backend Logs ==="
+            sudo docker compose -f /home/ubuntu/cloud-messenger/docker-compose.yml logs --tail 100 backend
+            
+            echo "=== Container Status ==="
+            sudo docker compose -f /home/ubuntu/cloud-messenger/docker-compose.yml ps
