@@ -10,7 +10,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { MessageBubble } from "./MessageBubble";
 import { MessageInputBar } from "./MessageInputBar";
-import { Sidebar } from "./Sidebar";
 import { SearchOverlay } from "./SearchOverlay";
 import { vibrate } from "@/lib/vibrate";
 
@@ -23,7 +22,6 @@ const EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
 export function ChatRoom() {
   const { userId, status, onMessage, sendMessage, token } = useWs();
   const [isDark, setIsDark] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const defaultOtherName = userId === "Hasi" ? "Rudh" : "Hasi";
   const [customOtherName, setCustomOtherName] = useState(defaultOtherName);
@@ -197,13 +195,7 @@ export function ChatRoom() {
 
   return (
     <div className="flex h-[100dvh] w-full bg-[var(--color-bg)] overflow-hidden relative">
-      <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
-      <div 
-        className={cn(
-          "flex flex-col h-[100dvh] w-full text-[var(--color-text)] transition-all duration-300 relative",
-          isSidebarOpen ? "sm:ml-[360px]" : "ml-0"
-        )}
-      >
+      <div className="flex flex-col h-[100dvh] w-full text-[var(--color-text)] transition-all duration-300 relative">
         <div className="w-full shrink-0 bg-[var(--color-bg)] px-4 h-16 flex items-center justify-between z-[30] border-b border-[var(--color-border)]/50 transition-colors duration-300 shadow-sm relative">
         <div className="flex items-center space-x-3">
           <div className="relative">
@@ -286,19 +278,8 @@ export function ChatRoom() {
           >
             <Search size={18} />
           </button>
-          <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            aria-label={isSidebarOpen ? 'Close folders sidebar' : 'Open folders sidebar'}
-            className={cn(
-              "w-9 h-9 flex items-center justify-center rounded-full border transition-colors shadow-[var(--shadow-sm)]",
-              isSidebarOpen 
-                ? "bg-[var(--color-accent)] border-[var(--color-accent)] text-white" 
-                : "bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
-            )}
-          >
-            <Folder size={18} />
-          </button>
-          <button
+
+          <button 
             onClick={() => setIsDark(!isDark)}
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             className="w-9 h-9 flex items-center justify-center rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors shadow-[var(--shadow-sm)]"
