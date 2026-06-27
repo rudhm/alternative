@@ -1,0 +1,73 @@
+name: Restore Database
+
+on:
+  workflow_dispatch:
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Restore DB from R2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USERNAME }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          script: |
+            set -e
+            echo "=== Downloading backup from Cloudflare R2 ==="
+            export WRANGLER_SEND_METRICS=false
+            
+            # Fetch the backup file using the local wrangler credentials
+            npx wrangler@latest r2 object get chat-backups/backup-2026-06-25_03-00-01.tar.gz --file /tmp/backup.tar.gz
+            
+            echo "=== Extracting backup ==="
+            rm -rf /tmp/backup_extract
+            mkdir -p /tmp/backup_extract
+            tar -xzf /tmp/backup.tar.gz -C /tmp/backup_extract
+            
+            if [ ! -f /tmp/backup_extract/database.sql ]; then
+              echo "Error: database.sql not found in the backup archive!"
+              exit 1
+            fi
+            
+            echo "=== Dropping all connections and resetting public schema ==="
+            sudo docker exec -i cloud_messenger_db psql -U postgres -d cloud_messenger -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+            
+            echo "=== Restoring database from backup ==="
+            sudo docker exec -i cloud_messenger_db psql -U postgres -d cloud_messenger < /tmp/backup_extract/database.sql
+            
+            echo "=== Restoring uploads ==="
+            sudo rsync -av --delete /tmp/backup_extract/uploads/ /mnt/chat_data/uploads/
+            sudo chown -R ubuntu:ubuntu /mnt/chat_data/uploads
+            
+            echo "=== Running Prisma Migrations to add folderId safely ==="
+            cd /home/ubuntu/cloud-messenger/backend
+            npx prisma migrate deploy
+            
+            echo "=== Fixing null folderIds in existing messages ==="
+            cat << 'EOF' > /tmp/fix_folders.js
+            const { PrismaClient } = require('@prisma/client');
+            const prisma = new PrismaClient();
+            async function fix() {
+              let main = await prisma.folder.findFirst({ where: { name: 'Main' } });
+              if (!main) {
+                main = await prisma.folder.create({ data: { name: 'Main' } });
+              }
+              await prisma.message.updateMany({
+                where: { folderId: null },
+                data: { folderId: main.id }
+              });
+              console.log("Fixed folder IDs");
+            }
+            fix().catch(console.error).finally(() => prisma.$disconnect());
+            EOF
+            node /tmp/fix_folders.js || echo "Script failed, but migrations succeeded"
+            
+            echo "=== Restarting Backend Container ==="
+            sudo docker compose restart backend
+            
+            echo "=== Cleanup ==="
+            rm -rf /tmp/backup.tar.gz /tmp/backup_extract /tmp/fix_folders.js
+            
+            echo "=== RESTORE COMPLETE! ==="
