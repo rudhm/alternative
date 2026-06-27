@@ -206,6 +206,24 @@ export const MessageBubble = React.memo(({
                   />
                 </>
               )
+            ) : m.type === 'video' ? (
+              <video 
+                src={mediaUrl} 
+                controls 
+                preload="metadata"
+                className="rounded-lg max-w-full min-h-[150px] max-h-64 object-cover"
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : m.type === 'audio' ? (
+              <div className="bg-black/10 dark:bg-white/10 rounded-full px-3 py-1 flex items-center min-w-[200px]">
+                <audio 
+                  src={mediaUrl} 
+                  controls 
+                  preload="metadata"
+                  className="w-full h-8"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
             ) : (
               <a href={mediaUrl} target="_blank" rel="noreferrer" className="block text-sm break-all underline decoration-current/30 underline-offset-4">{mediaUrl}</a>
             )}

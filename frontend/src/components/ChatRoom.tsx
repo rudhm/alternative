@@ -201,7 +201,7 @@ export function ChatRoom() {
           isSidebarOpen ? "sm:ml-[360px]" : "ml-0"
         )}
       >
-        <div className="w-full shrink-0 bg-[var(--color-bg)] px-4 h-16 flex items-center justify-between z-[200000] border-b border-[var(--color-border)]/50 transition-colors duration-300 shadow-sm relative">
+        <div className="w-full shrink-0 bg-[var(--color-bg)] px-4 h-16 flex items-center justify-between z-[30] border-b border-[var(--color-border)]/50 transition-colors duration-300 shadow-sm relative">
         <div className="flex items-center space-x-3">
           <div className="relative">
             {otherStatus === "online" && (
@@ -296,10 +296,10 @@ export function ChatRoom() {
       {activeReactionId && (
         <>
           <div 
-            className="fixed inset-0 z-[300000] bg-black/20 dark:bg-black/40"
+            className="fixed inset-0 z-[50] bg-black/20 dark:bg-black/40"
             onClick={() => setActiveReactionId(null)}
           />
-          <div className="fixed inset-0 z-[500000] pointer-events-none">
+          <div className="fixed inset-0 z-[60] pointer-events-none">
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -390,7 +390,7 @@ export function ChatRoom() {
                 )}
                 style={{
                   transform: `translateY(${vItem.start}px)`,
-                  zIndex: activeReactionId === item.originalMsg?.id ? 400000 : 100000 - vItem.index,
+                  zIndex: activeReactionId === item.originalMsg?.id ? 45 : 10,
                   contain: "content",
                 }}
               >
@@ -419,7 +419,7 @@ export function ChatRoom() {
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            className="absolute bottom-24 right-4 z-[150000]"
+            className="absolute bottom-24 right-4 z-[40]"
           >
             <button
               onClick={scrollToBottom}

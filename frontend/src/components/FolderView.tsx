@@ -45,18 +45,18 @@ export function FolderView({ folder, onBack }: { folder: Folder, onBack: () => v
       initial={{ x: 20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 20, opacity: 0 }}
-      className="flex flex-col h-full bg-[#ffffff0a] dark:bg-transparent"
+      className="flex flex-col h-full bg-transparent"
     >
-      <div className="p-4 border-b border-white/[0.08] shrink-0 flex items-center gap-3">
+      <div className="p-4 border-b border-[var(--color-border)] shrink-0 flex items-center gap-3">
         <button 
           onClick={onBack}
-          className="p-2 rounded-full hover:bg-white/10 transition-colors text-rose-200/70 hover:text-rose-100"
+          className="p-2 rounded-full hover:bg-[var(--color-surface-raised)] transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
         >
           <ChevronLeft size={20} />
         </button>
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-semibold text-rose-50 truncate flex items-center gap-2">
-            {folder.icon === 'Star' ? <Sparkles size={16} className="text-yellow-400" /> : <FolderIcon size={16} className="text-rose-400" />}
+          <h2 className="text-lg font-semibold text-[var(--color-text)] truncate flex items-center gap-2">
+            {folder.icon === 'Star' ? <Sparkles size={16} className="text-[var(--color-warning)]" /> : <FolderIcon size={16} className="text-[var(--color-accent)]" />}
             {folder.name}
           </h2>
         </div>
@@ -71,8 +71,8 @@ export function FolderView({ folder, onBack }: { folder: Folder, onBack: () => v
             className={cn(
               "px-3 py-1.5 text-xs font-medium rounded-full transition-colors capitalize",
               activeTab === tab 
-                ? "bg-rose-500/20 text-rose-100 border border-rose-500/30" 
-                : "text-rose-200/50 hover:bg-white/5 hover:text-rose-200"
+                ? "bg-[var(--color-accent-muted)] text-[var(--color-accent)] border border-[var(--color-accent-glow)]" 
+                : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-raised)] hover:text-[var(--color-text)]"
             )}
           >
             {tab}
@@ -85,10 +85,10 @@ export function FolderView({ folder, onBack }: { folder: Folder, onBack: () => v
           <motion.form 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-black/30 rounded-2xl p-4 border border-rose-500/30 shadow-xl relative"
+            className="bg-[var(--color-surface)] rounded-2xl p-4 border border-[var(--color-accent-glow)] shadow-xl relative"
             onSubmit={handleCreate}
           >
-            <div className="flex items-center gap-2 mb-3 text-rose-300 text-sm font-medium">
+            <div className="flex items-center gap-2 mb-3 text-[var(--color-accent)] text-sm font-medium">
               {isCreating === 'note' ? <FileText size={16} /> : <CheckSquare size={16} />}
               New {isCreating === 'note' ? 'Note' : 'To-Do List'}
             </div>
@@ -99,7 +99,7 @@ export function FolderView({ folder, onBack }: { folder: Folder, onBack: () => v
               placeholder="Title..."
               value={newItemTitle}
               onChange={e => setNewItemTitle(e.target.value)}
-              className="w-full bg-transparent border-none text-base font-medium text-rose-50 placeholder:text-rose-200/30 focus:outline-none mb-3"
+              className="w-full bg-transparent border-none text-base font-medium text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none mb-3"
             />
             
             {isCreating === 'note' ? (
@@ -107,7 +107,7 @@ export function FolderView({ folder, onBack }: { folder: Folder, onBack: () => v
                 placeholder="Write your thoughts..."
                 value={newItemContent}
                 onChange={e => setNewItemContent(e.target.value)}
-                className="w-full bg-white/5 rounded-xl p-3 text-sm text-rose-100 placeholder:text-rose-200/30 focus:outline-none focus:ring-1 focus:ring-rose-500/50 min-h-[100px] resize-none"
+                className="w-full bg-[var(--color-surface-raised)] rounded-xl p-3 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] min-h-[100px] resize-none"
               />
             ) : (
               <input
@@ -115,13 +115,13 @@ export function FolderView({ folder, onBack }: { folder: Folder, onBack: () => v
                 placeholder="First task..."
                 value={newItemContent}
                 onChange={e => setNewItemContent(e.target.value)}
-                className="w-full bg-white/5 rounded-xl px-3 py-2 text-sm text-rose-100 placeholder:text-rose-200/30 focus:outline-none focus:ring-1 focus:ring-rose-500/50"
+                className="w-full bg-[var(--color-surface-raised)] rounded-xl px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
               />
             )}
             
             <div className="flex justify-end gap-2 mt-4">
-              <button type="button" onClick={() => setIsCreating('none')} className="px-3 py-1.5 text-xs text-rose-200/60 hover:text-rose-100 transition-colors rounded-lg">Cancel</button>
-              <button type="submit" disabled={!newItemTitle.trim()} className="px-4 py-1.5 text-xs font-medium bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors disabled:opacity-50 flex items-center gap-2 shadow-[0_0_15px_rgba(244,63,94,0.3)]">
+              <button type="button" onClick={() => setIsCreating('none')} className="px-3 py-1.5 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors rounded-lg">Cancel</button>
+              <button type="submit" disabled={!newItemTitle.trim()} className="px-4 py-1.5 text-xs font-medium bg-[var(--color-accent)] text-white rounded-lg hover:bg-[var(--color-accent)] transition-colors disabled:opacity-50 flex items-center gap-2">
                 <Save size={14} /> Save
               </button>
             </div>
@@ -131,11 +131,11 @@ export function FolderView({ folder, onBack }: { folder: Folder, onBack: () => v
         {filteredItems.length === 0 && isCreating === 'none' && (
           <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
             <div className="flex gap-4 mb-4 opacity-50">
-              <FileText size={32} className="text-rose-300" />
-              <CheckSquare size={32} className="text-purple-300" />
+              <FileText size={32} className="text-[var(--color-accent)]" />
+              <CheckSquare size={32} className="text-[var(--color-accent-light)]" />
             </div>
-            <p className="text-sm text-rose-200/70">Folder is empty</p>
-            <p className="text-xs text-rose-200/40 mt-1 max-w-[200px]">Create a note or to-do list to keep your thoughts organized.</p>
+            <p className="text-sm text-[var(--color-text-secondary)]">Folder is empty</p>
+            <p className="text-xs text-[var(--color-text-muted)] mt-1 max-w-[200px]">Create a note or to-do list to keep your thoughts organized.</p>
           </div>
         )}
 
@@ -152,16 +152,16 @@ export function FolderView({ folder, onBack }: { folder: Folder, onBack: () => v
         </AnimatePresence>
       </div>
 
-      <div className="p-4 border-t border-white/[0.08] shrink-0 flex gap-2">
+      <div className="p-4 border-t border-[var(--color-border)] shrink-0 flex gap-2">
         <button 
           onClick={() => setIsCreating('note')}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-rose-100 text-sm font-medium transition-colors border border-white/5"
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[var(--color-surface-raised)] hover:bg-[var(--color-surface-overlay)] text-[var(--color-text)] text-sm font-medium transition-colors border border-[var(--color-border)]"
         >
           <FileText size={16} /> Note
         </button>
         <button 
           onClick={() => setIsCreating('todo')}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-rose-100 text-sm font-medium transition-colors border border-white/5"
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[var(--color-surface-raised)] hover:bg-[var(--color-surface-overlay)] text-[var(--color-text)] text-sm font-medium transition-colors border border-[var(--color-border)]"
         >
           <CheckSquare size={16} /> To-Do
         </button>
@@ -215,20 +215,20 @@ function ItemCard({ item, folderId, onUpdate, onDelete }: {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="bg-black/20 rounded-2xl p-4 border border-white/[0.05] hover:border-white/[0.1] transition-colors group relative overflow-hidden"
+      className="bg-[var(--color-surface)] rounded-2xl p-4 border border-[var(--color-border)] hover:border-[var(--color-border-strong)] transition-colors group relative overflow-hidden"
     >
       <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 z-10">
         {!isEditing && (
-          <button onClick={() => setIsEditing(true)} className="p-1.5 bg-black/50 backdrop-blur-md rounded-lg text-rose-200/50 hover:text-rose-200 transition-colors">
+          <button onClick={() => setIsEditing(true)} className="p-1.5 bg-[var(--color-surface-overlay)] backdrop-blur-md rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
             <Edit2 size={14} />
           </button>
         )}
-        <button onClick={() => onDelete(folderId, item.id)} className="p-1.5 bg-black/50 backdrop-blur-md rounded-lg text-red-400/50 hover:text-red-400 transition-colors">
+        <button onClick={() => onDelete(folderId, item.id)} className="p-1.5 bg-[var(--color-surface-overlay)] backdrop-blur-md rounded-lg text-[var(--color-danger)] opacity-50 hover:opacity-100 transition-colors">
           <Trash2 size={14} />
         </button>
       </div>
 
-      <div className="flex items-center gap-2 text-rose-300/80 mb-2">
+      <div className="flex items-center gap-2 text-[var(--color-accent)] opacity-80 mb-2">
         {item.type === 'note' ? <FileText size={14} /> : <CheckSquare size={14} />}
         <span className="text-[10px] font-semibold uppercase tracking-wider">{item.type}</span>
       </div>
@@ -239,27 +239,27 @@ function ItemCard({ item, folderId, onUpdate, onDelete }: {
             type="text"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            className="w-full bg-transparent border-b border-rose-500/30 pb-1 text-base font-semibold text-rose-50 focus:outline-none focus:border-rose-400"
+            className="w-full bg-transparent border-b border-[var(--color-border-strong)] pb-1 text-base font-semibold text-[var(--color-text)] focus:outline-none focus:border-[var(--color-accent)]"
           />
           {item.type === 'note' && (
             <textarea
               value={content}
               onChange={e => setContent(e.target.value)}
-              className="w-full bg-white/5 rounded-xl p-3 text-sm text-rose-100 focus:outline-none focus:ring-1 focus:ring-rose-500/50 min-h-[100px] resize-y"
+              className="w-full bg-[var(--color-surface-raised)] rounded-xl p-3 text-sm text-[var(--color-text)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] min-h-[100px] resize-y"
             />
           )}
           <div className="flex justify-end pt-2">
-            <button onClick={handleSave} className="px-3 py-1.5 text-xs font-medium bg-rose-500/20 text-rose-200 rounded-lg hover:bg-rose-500/40 transition-colors">
+            <button onClick={handleSave} className="px-3 py-1.5 text-xs font-medium bg-[var(--color-accent-muted)] text-[var(--color-accent)] rounded-lg hover:bg-[var(--color-accent-glow)] transition-colors">
               Done
             </button>
           </div>
         </div>
       ) : (
         <div className="mt-1 relative z-20 pointer-events-none">
-          <h3 className="text-base font-medium text-rose-50 mb-2">{title}</h3>
+          <h3 className="text-base font-medium text-[var(--color-text)] mb-2">{title}</h3>
           
           {item.type === 'note' ? (
-            <div className="text-sm text-rose-100/70 whitespace-pre-wrap leading-relaxed line-clamp-6">
+            <div className="text-sm text-[var(--color-text-secondary)] whitespace-pre-wrap leading-relaxed line-clamp-6">
               {content}
             </div>
           ) : (
@@ -271,29 +271,29 @@ function ItemCard({ item, folderId, onUpdate, onDelete }: {
                     className={cn(
                       "mt-0.5 shrink-0 w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors",
                       task.completed 
-                        ? "bg-rose-500 border-rose-500 text-white" 
-                        : "border-rose-500/30 hover:border-rose-500/60 text-transparent"
+                        ? "bg-[var(--color-accent)] border-[var(--color-accent)] text-white" 
+                        : "border-[var(--color-border-strong)] hover:border-[var(--color-accent)] text-transparent"
                     )}
                   >
                     <Check size={12} strokeWidth={3} />
                   </button>
                   <span className={cn(
                     "text-sm transition-all",
-                    task.completed ? "text-rose-200/30 line-through" : "text-rose-100/80"
+                    task.completed ? "text-[var(--color-text-muted)] line-through" : "text-[var(--color-text)] opacity-80"
                   )}>
                     {task.text}
                   </span>
                 </div>
               ))}
               
-              <form onSubmit={addTask} className="flex items-center gap-2 mt-3 pt-2 border-t border-white/[0.05]">
-                <Plus size={14} className="text-rose-200/30" />
+              <form onSubmit={addTask} className="flex items-center gap-2 mt-3 pt-2 border-t border-[var(--color-border)]">
+                <Plus size={14} className="text-[var(--color-text-muted)]" />
                 <input
                   type="text"
                   placeholder="Add a task..."
                   value={newTaskText}
                   onChange={e => setNewTaskText(e.target.value)}
-                  className="w-full bg-transparent border-none text-sm text-rose-200 placeholder:text-rose-200/30 focus:outline-none"
+                  className="w-full bg-transparent border-none text-sm text-[var(--color-text-secondary)] placeholder:text-[var(--color-text-muted)] focus:outline-none"
                 />
               </form>
             </div>
