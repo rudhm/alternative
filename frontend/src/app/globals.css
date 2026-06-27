@@ -22,6 +22,7 @@
   --color-surface-overlay: rgba(255, 255, 255, 0.85);
 
   /* Light-mode text */
+  --chat-wallpaper: url('/chat_bg_light.jpg');
   --color-text: #171417;
   --color-text-secondary: #67606a;
   --color-text-muted: #9b939d;
@@ -118,6 +119,7 @@
   --color-background: #111014;
   --color-foreground: #f5f0f4;
   --color-accent-rgb: 217, 17, 143;
+  --chat-wallpaper: url('/chat_bg_dark.jpg');
 }
 
 @keyframes slideUpFade {

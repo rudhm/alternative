@@ -373,7 +373,7 @@ export function ChatRoom() {
 
       <div 
         ref={parentRef}
-        className="flex-1 overflow-y-auto px-1 sm:px-2 pt-2 pb-2 select-none [-webkit-touch-callout:none]" style={{ overscrollBehavior: "contain", touchAction: "pan-y", WebkitOverflowScrolling: "touch" }}
+        className="flex-1 overflow-y-auto px-1 sm:px-2 pt-2 pb-2 select-none [-webkit-touch-callout:none]" style={{ overscrollBehavior: "contain", touchAction: "pan-y", WebkitOverflowScrolling: "touch", backgroundImage: "var(--chat-wallpaper)", backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" }}
         onScroll={handleScroll}
       >
         {isLoadingMore && (
