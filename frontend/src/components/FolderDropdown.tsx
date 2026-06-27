@@ -37,10 +37,31 @@ export function FolderDropdown({
           if (data.folders && data.folders.length > 0) {
             setFolders(data.folders);
             const active = data.folders.find((f: FolderItem) => f.id === activeFolderId);
-            if (active) setActiveFolderName(active.name);
+            if (active) {
+              setActiveFolderName(active.name);
+            } else {
+              // If activeFolderId is not in the list, fallback to the first available folder
+              const firstFolder = data.folders[0];
+              setActiveFolderName(firstFolder.name);
+              onSelectFolder(firstFolder.id, firstFolder.name);
+            }
           } else {
-            // Fallback if none exist yet
-            setFolders([{ id: 'main-folder-id', name: 'Main' }]);
+            // Auto-create Main folder if database is completely empty
+            const createRes = await fetch(`${apiUrl}/api/folders`, {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+              },
+              body: JSON.stringify({ name: 'Main' }),
+              credentials: "include"
+            });
+            if (createRes.ok) {
+              const createData = await createRes.json();
+              setFolders([createData.folder]);
+              setActiveFolderName(createData.folder.name);
+              onSelectFolder(createData.folder.id, createData.folder.name);
+            }
           }
         }
       } catch (err) {
