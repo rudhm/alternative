@@ -1,0 +1,41 @@
+name: Fix Folders
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fix Folders
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USERNAME }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          script: |
+            set -e
+            echo "=== Fixing null folderIds in existing messages ==="
+            cat << 'EOF' > /tmp/fix_folders.js
+            const { PrismaClient } = require('@prisma/client');
+            const prisma = new PrismaClient();
+            async function fix() {
+              let main = await prisma.folder.findFirst({ where: { name: 'Main' } });
+              if (!main) {
+                main = await prisma.folder.create({ data: { name: 'Main' } });
+              }
+              const result = await prisma.message.updateMany({
+                where: { folderId: null },
+                data: { folderId: main.id }
+              });
+              console.log(`Fixed ${result.count} messages!`);
+            }
+            fix().catch(console.error).finally(() => prisma.$disconnect());
+            EOF
+            
+            # Copy script into the backend container and run it using the container's Node.js from the /app directory
+            CONTAINER_ID=$(sudo docker compose -f /home/ubuntu/cloud-messenger/docker-compose.yml ps -q backend)
+            sudo docker cp /tmp/fix_folders.js $CONTAINER_ID:/tmp/fix_folders.js
+            sudo docker exec -w /app $CONTAINER_ID node /tmp/fix_folders.js
+            
+            echo "=== FIX COMPLETE! ==="
