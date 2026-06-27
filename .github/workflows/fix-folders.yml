@@ -15,27 +15,26 @@ jobs:
           key: ${{ secrets.ORACLE_SSH_KEY }}
           script: |
             set -e
-            echo "=== Fixing null folderIds in existing messages ==="
-            cat << 'EOF' > /tmp/fix_folders.js
-            const { PrismaClient } = require('@prisma/client');
-            const prisma = new PrismaClient();
-            async function fix() {
-              let main = await prisma.folder.findFirst({ where: { name: 'Main' } });
-              if (!main) {
-                main = await prisma.folder.create({ data: { name: 'Main' } });
-              }
-              const result = await prisma.message.updateMany({
-                where: { folderId: null },
-                data: { folderId: main.id }
-              });
-              console.log(`Fixed ${result.count} messages!`);
-            }
-            fix().catch(console.error).finally(() => prisma.$disconnect());
+            echo "=== Fixing null folderIds in existing messages via SQL ==="
+            sudo docker exec -i cloud_messenger_db psql -U postgres -d cloud_messenger << 'EOF'
+            DO $$
+            DECLARE
+              main_id TEXT;
+            BEGIN
+              -- Try to find the Main folder
+              SELECT id INTO main_id FROM "Folder" WHERE name = 'Main' LIMIT 1;
+              
+              -- If it doesn't exist, create it with a random UUID
+              IF main_id IS NULL THEN
+                main_id := gen_random_uuid()::text;
+                INSERT INTO "Folder" (id, name, "createdAt") VALUES (main_id, 'Main', NOW());
+                RAISE NOTICE 'Created Main folder with ID %', main_id;
+              END IF;
+              
+              -- Update all old messages
+              UPDATE "Message" SET "folderId" = main_id WHERE "folderId" IS NULL;
+              RAISE NOTICE 'Updated messages to use Main folder!';
+            END $$;
             EOF
-            
-            # Copy script into the backend container and run it using the container's Node.js from the /app directory
-            CONTAINER_ID=$(sudo docker compose -f /home/ubuntu/cloud-messenger/docker-compose.yml ps -q backend)
-            sudo docker cp /tmp/fix_folders.js $CONTAINER_ID:/tmp/fix_folders.js
-            sudo docker exec -w /app $CONTAINER_ID node /tmp/fix_folders.js
             
             echo "=== FIX COMPLETE! ==="
