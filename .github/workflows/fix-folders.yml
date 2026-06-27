@@ -15,6 +15,14 @@ jobs:
           key: ${{ secrets.ORACLE_SSH_KEY }}
           script: |
             set -e
+            echo "=== Pulling latest code and rebuilding backend ==="
+            cd /home/ubuntu/cloud-messenger
+            git pull origin master
+            sudo docker compose up -d --build backend
+            
+            echo "=== Waiting for backend and migrations to finish ==="
+            sleep 15
+            
             echo "=== Fixing null folderIds in existing messages via SQL ==="
             sudo docker exec -i cloud_messenger_db psql -U postgres -d cloud_messenger << 'EOF'
             DO $$
