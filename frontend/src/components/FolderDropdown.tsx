@@ -103,7 +103,7 @@ export function FolderDropdown({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute top-full left-0 mt-2 w-56 bg-[#0f0a1a] rounded-xl shadow-2xl border border-[var(--color-border)] overflow-hidden z-50 origin-top-left flex flex-col max-h-[300px]"
+            className="absolute top-full right-0 mt-2 w-56 bg-[#0f0a1a] rounded-xl shadow-2xl border border-[var(--color-border)] overflow-hidden z-50 origin-top-right flex flex-col max-h-[300px]"
           >
             <div className="flex-1 overflow-y-auto p-1 scrollbar-hide">
               {folders.map(f => (
