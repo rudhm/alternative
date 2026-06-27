@@ -22,6 +22,8 @@ model Message {
   createdAt DateTime @default(now())
   authorId  String
   author    User     @relation(fields: [authorId], references: [id])
+  folderId  String?
+  folder    Folder?  @relation(fields: [folderId], references: [id])
   media       Media[]
   reactions   Reaction[]
   readReceipt ReadReceipt?
@@ -33,6 +35,14 @@ model Message {
 
   @@index([createdAt])  // Cursor-pagination ORDER BY
   @@index([authorId])   // Per-user message lookups
+  @@index([folderId])   // Faster filtering by folder
+}
+
+model Folder {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  messages  Message[]
 }
 
 model Media {

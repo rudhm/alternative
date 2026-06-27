@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { MessageBubble } from "./MessageBubble";
 import { MessageInputBar } from "./MessageInputBar";
 import { SearchOverlay } from "./SearchOverlay";
+import { FolderDropdown } from "./FolderDropdown";
 import { vibrate } from "@/lib/vibrate";
 
 import { useMessages } from "@/hooks/useMessages";
@@ -28,6 +29,8 @@ export function ChatRoom() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [activeFolderId, setActiveFolderId] = useState("main-folder-id");
+  const [isFolderDropdownOpen, setIsFolderDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -82,7 +85,7 @@ export function ChatRoom() {
     handleFileUpload,
     uploadFiles,
     injectMessages,
-  } = useMessages({ token, userId, onMessage, sendMessage, parentRef, isAtBottom });
+  } = useMessages({ token, userId, onMessage, sendMessage, parentRef, isAtBottom, activeFolderId });
 
   const { typingUser, handleTyping } = useTyping(onMessage, sendMessage);
   const { otherStatus, displayStatus } = usePresence(onMessage, userId, status);
@@ -279,6 +282,15 @@ export function ChatRoom() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <FolderDropdown
+            activeFolderId={activeFolderId}
+            isOpen={isFolderDropdownOpen}
+            onToggle={() => setIsFolderDropdownOpen(!isFolderDropdownOpen)}
+            onSelectFolder={(id) => {
+              setActiveFolderId(id);
+            }}
+          />
+
           <button
             onClick={() => setIsSearchOpen(!isSearchOpen)}
             aria-label={isSearchOpen ? 'Close search' : 'Open search'}
@@ -316,6 +328,7 @@ export function ChatRoom() {
           }
         }} 
         token={token}
+        activeFolderId={activeFolderId}
       />
 
       {activeReactionId && (

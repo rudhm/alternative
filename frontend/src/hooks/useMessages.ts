@@ -7,7 +7,8 @@ export function useMessages({
   onMessage, 
   sendMessage, 
   parentRef,
-  isAtBottom
+  isAtBottom,
+  activeFolderId = 'main-folder-id'
 }: { 
   token: string | null;
   userId: string | null;
@@ -15,6 +16,7 @@ export function useMessages({
   sendMessage: (msg: any) => void;
   parentRef: React.RefObject<HTMLDivElement | null>;
   isAtBottom: React.MutableRefObject<boolean>;
+  activeFolderId?: string;
 }) {
   const [messages, setMessages] = useState<any[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -41,8 +43,10 @@ export function useMessages({
 
   useEffect(() => {
     if (!token) return;
+    setIsLoadingMore(false);
+    setNextCursor(null);
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://rudhasi.mooo.com";
-    fetch(`${apiUrl}/api/messages`, { 
+    fetch(`${apiUrl}/api/messages?folderId=${activeFolderId}`, { 
       headers: { Authorization: `Bearer ${token}` },
       credentials: "include" 
     })
@@ -54,7 +58,7 @@ export function useMessages({
         }
       })
       .catch(err => console.error("Failed to fetch messages", err));
-  }, [token]);
+  }, [token, activeFolderId]);
 
   useEffect(() => {
     if (!token) return;
@@ -63,9 +67,9 @@ export function useMessages({
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://rudhasi.mooo.com";
         setMessages(prev => {
           const latestMsg = prev.length > 0 ? prev[prev.length - 1] : null;
-          const afterParam = latestMsg ? `?after=${latestMsg.id}` : '';
+          const afterParam = latestMsg ? `&after=${latestMsg.id}` : '';
           
-          fetch(`${apiUrl}/api/messages${afterParam}`, { 
+          fetch(`${apiUrl}/api/messages?folderId=${activeFolderId}${afterParam}`, { 
             headers: { Authorization: `Bearer ${token}` },
             credentials: "include" 
           })
@@ -88,7 +92,7 @@ export function useMessages({
     };
     document.addEventListener('visibilitychange', handleVisibility);
     return () => document.removeEventListener('visibilitychange', handleVisibility);
-  }, [token]);
+  }, [token, activeFolderId]);
 
   const loadMore = useCallback(async () => {
     if (!nextCursor || isLoadingMore) return;
@@ -99,7 +103,7 @@ export function useMessages({
     const prevScrollTop = parentRef.current?.scrollTop || 0;
     
     try {
-      const r = await fetch(`${apiUrl}/api/messages?cursor=${nextCursor}`, { 
+      const r = await fetch(`${apiUrl}/api/messages?cursor=${nextCursor}&folderId=${activeFolderId}`, { 
         headers: { Authorization: `Bearer ${token}` },
         credentials: "include" 
       });
@@ -120,12 +124,15 @@ export function useMessages({
     } finally {
       setIsLoadingMore(false);
     }
-  }, [nextCursor, isLoadingMore, token, parentRef]);
+  }, [nextCursor, isLoadingMore, token, parentRef, activeFolderId]);
 
   useEffect(() => {
     return onMessage((lastMessage: any) => {
       if (lastMessage?.type === 'chat') {
         const msg = lastMessage.payload;
+        // Only accept messages for the current folder
+        if (msg.folderId && msg.folderId !== activeFolderId) return;
+        
         setMessages(prev => {
           const idx = prev.findIndex(m => m.id === msg.id);
           if (idx !== -1) {
@@ -182,7 +189,7 @@ export function useMessages({
          }
       }
     });
-  }, [onMessage, userId]);
+  }, [onMessage, userId, activeFolderId]);
 
   const receiptedRef = useRef<Set<string>>(new Set());
 
@@ -216,7 +223,8 @@ export function useMessages({
       id: msgId,
       content: text,
       media: [],
-      replyToId: replyingTo?.id
+      replyToId: replyingTo?.id,
+      folderId: activeFolderId
     };
     
     setMessages(prev => [...prev, {
@@ -244,7 +252,7 @@ export function useMessages({
         return prev;
       });
     }, 5000);
-  }, [replyingTo, sendMessage, userId, isAtBottom]);
+  }, [replyingTo, sendMessage, userId, isAtBottom, activeFolderId]);
 
   const retryMessage = useCallback(async (msg: any) => {
     setMessages(prev =>
@@ -294,7 +302,7 @@ export function useMessages({
         });
 
         const data: any = await uploadPromise;
-        sendMessage({ type: "chat", payload: { id: msg.id, content: msg.content, media: [data], replyToId: msg.replyToId } });
+        sendMessage({ type: "chat", payload: { id: msg.id, content: msg.content, media: [data], replyToId: msg.replyToId, folderId: msg.folderId } });
         return;
       } catch (err) {
         console.error("Retry upload failed", err);
@@ -309,7 +317,7 @@ export function useMessages({
       }
     }
 
-    sendMessage({ type: "chat", payload: { id: msg.id, content: msg.content, media: msg.media || [], replyToId: msg.replyToId } });
+    sendMessage({ type: "chat", payload: { id: msg.id, content: msg.content, media: msg.media || [], replyToId: msg.replyToId, folderId: msg.folderId } });
     setTimeout(() => {
       setMessages(prev => {
         const idx = prev.findIndex(m => m.id === msg.id);
@@ -336,7 +344,8 @@ export function useMessages({
     const payload = {
       id: msgId,
       content: "",
-      media: mediaPlaceholders
+      media: mediaPlaceholders,
+      folderId: activeFolderId
     };
 
     setMessages(prev => [...prev, {

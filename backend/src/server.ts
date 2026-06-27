@@ -75,14 +75,36 @@ app.post('/api/upload', authMiddleware, uploadLimiter, uploadMiddleware.single('
   }
 });
 
+app.get('/api/folders', authMiddleware, async (req, res) => {
+  try {
+    const folders = await prisma.folder.findMany({ orderBy: { createdAt: 'asc' } });
+    res.json({ folders });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch folders' });
+  }
+});
+
+app.post('/api/folders', authMiddleware, async (req, res) => {
+  const { name } = req.body;
+  if (!name || name.trim().length === 0) return res.status(400).json({ error: 'Name is required' });
+  try {
+    const folder = await prisma.folder.create({ data: { name: name.trim() } });
+    res.json({ folder });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create folder (might already exist)' });
+  }
+});
+
 app.get('/api/messages/search', authMiddleware, async (req, res) => {
   const q = req.query.q as string;
+  const folderId = req.query.folderId as string || 'main-folder-id';
   if (!q) return res.json({ messages: [] });
   
   try {
     const messages = await prisma.message.findMany({
       where: { 
-        content: { contains: q, mode: 'insensitive' } 
+        content: { contains: q, mode: 'insensitive' },
+        folderId
       },
       orderBy: { createdAt: 'desc' },
       take: 50,
@@ -120,6 +142,7 @@ app.get('/api/link-preview', authMiddleware, async (req, res) => {
 app.get('/api/messages', authMiddleware, async (req, res) => {
   const cursor = req.query.cursor as string | undefined;
   const after = req.query.after as string | undefined;
+  const folderId = req.query.folderId as string || 'main-folder-id';
   const limit = 50;
 
   if (after) {
@@ -127,7 +150,7 @@ app.get('/api/messages', authMiddleware, async (req, res) => {
     if (!refMsg) return res.json({ messages: [] });
     
     const messages = await prisma.message.findMany({
-      where: { createdAt: { gt: refMsg.createdAt } },
+      where: { createdAt: { gt: refMsg.createdAt }, folderId },
       orderBy: { createdAt: 'desc' },
       include: { media: true, reactions: true, readReceipt: true, replyTo: true },
     });
@@ -135,6 +158,7 @@ app.get('/api/messages', authMiddleware, async (req, res) => {
   }
 
   const messages = await prisma.message.findMany({
+    where: { folderId },
     take: limit + 1,
     skip: cursor ? 1 : 0,
     cursor: cursor ? { id: cursor } : undefined,
@@ -206,6 +230,7 @@ const chatPayloadSchema = z.object({
   id: z.string(),
   content: z.string().max(10_000).optional().nullable(),
   replyToId: z.string().optional().nullable(),
+  folderId: z.string().optional().nullable(),
   media: z.array(z.object({
     url: z.string(),
     type: z.string()
@@ -282,7 +307,7 @@ wss.on('connection', (ws: any) => {
       
       if (data.type === 'chat') {
         const payload = chatPayloadSchema.parse(data.payload);
-        const { id, content, media, replyToId } = payload;
+        const { id, content, media, replyToId, folderId } = payload;
         
         const optimisticMsg = {
           id,
@@ -293,7 +318,8 @@ wss.on('connection', (ws: any) => {
           reactions: [],
           readReceipt: null,
           replyToId: replyToId || null,
-          replyTo: null
+          replyTo: null,
+          folderId: folderId || 'main-folder-id'
         };
         broadcast({ type: 'chat', payload: optimisticMsg });
 
@@ -303,12 +329,13 @@ wss.on('connection', (ws: any) => {
             content: content || null,
             authorId: userId,
             replyToId: replyToId || null,
-            media: media && media.length > 0 ? {
-              create: media.map((m: any) => ({
+            folderId: folderId || 'main-folder-id',
+            media: {
+              create: media?.map((m: any) => ({
                 url: m.url,
                 type: m.type
-              }))
-            } : undefined
+              })) || []
+            }
           },
           include: { media: true, reactions: true, readReceipt: true, replyTo: true }
         }).then(() => {

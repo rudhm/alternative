@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Loader2, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export function SearchOverlay({ isOpen, onClose, onResultClick, token }: { isOpen: boolean, onClose: () => void, onResultClick: (msg: any) => void, token: string | null }) {
+export function SearchOverlay({ isOpen, onClose, onResultClick, token, activeFolderId }: { isOpen: boolean, onClose: () => void, onResultClick: (msg: any) => void, token: string | null, activeFolderId: string }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +28,7 @@ export function SearchOverlay({ isOpen, onClose, onResultClick, token }: { isOpe
         const headers: HeadersInit = {};
         if (token) headers['Authorization'] = `Bearer ${token}`;
         
-        const res = await fetch(`${apiUrl}/api/messages/search?q=${encodeURIComponent(query)}`, { 
+        const res = await fetch(`${apiUrl}/api/messages/search?q=${encodeURIComponent(query)}&folderId=${activeFolderId}`, { 
           headers,
           credentials: "include" 
         });
