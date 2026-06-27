@@ -65,6 +65,7 @@ export function ChatRoom() {
   const parentRef = useRef<HTMLDivElement>(null);
   const isAtBottom = useRef(true);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
+  const [searchTargetId, setSearchTargetId] = useState<string | null>(null);
 
   const {
     messages,
@@ -80,6 +81,7 @@ export function ChatRoom() {
     retryMessage,
     handleFileUpload,
     uploadFiles,
+    injectMessages,
   } = useMessages({ token, userId, onMessage, sendMessage, parentRef, isAtBottom });
 
   const { typingUser, handleTyping } = useTyping(onMessage, sendMessage);
@@ -160,6 +162,17 @@ export function ChatRoom() {
     },
     overscan: 5,
   });
+
+  useEffect(() => {
+    if (searchTargetId) {
+      const idx = items.findIndex(item => item.originalMsg?.id === searchTargetId);
+      if (idx !== -1) {
+        virtualizer.scrollToIndex(idx, { align: 'center' });
+        setActiveReactionId(searchTargetId);
+        setSearchTargetId(null);
+      }
+    }
+  }, [items, searchTargetId, virtualizer, setActiveReactionId]);
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     if (activeReactionId) {
@@ -293,14 +306,13 @@ export function ChatRoom() {
         isOpen={isSearchOpen} 
         onClose={() => setIsSearchOpen(false)} 
         onResultClick={(msg) => {
-          // If message is in currently loaded items, scroll to it.
-          // Otherwise, we would need to load context (out of scope for MVP).
           const idx = items.findIndex(item => item.originalMsg?.id === msg.id);
           if (idx !== -1) {
             virtualizer.scrollToIndex(idx, { align: 'center' });
             setActiveReactionId(msg.id);
           } else {
-            alert("Message is from an older chat history not currently loaded.");
+            injectMessages([msg]);
+            setSearchTargetId(msg.id);
           }
         }} 
       />
@@ -347,7 +359,7 @@ export function ChatRoom() {
 
       <div 
         ref={parentRef}
-        className="flex-1 overflow-y-auto px-1 sm:px-2 pt-2 pb-2 select-none [-webkit-touch-callout:none]" style={{ overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}
+        className="flex-1 overflow-y-auto px-1 sm:px-2 pt-2 pb-2 select-none [-webkit-touch-callout:none]" style={{ overscrollBehavior: "contain", touchAction: "pan-y", WebkitOverflowScrolling: "touch" }}
         onScroll={handleScroll}
       >
         {isLoadingMore && (

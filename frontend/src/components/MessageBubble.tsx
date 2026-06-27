@@ -77,6 +77,7 @@ export const MessageBubble = React.memo(({
     isDraggingX.current = false;
     if (bubbleRef.current) {
       bubbleRef.current.style.transition = 'none';
+      bubbleRef.current.style.willChange = 'transform';
     }
   }, [handlePressStart]);
 
@@ -113,7 +114,45 @@ export const MessageBubble = React.memo(({
     isDraggingX.current = false;
     bubbleRef.current.style.transition = 'transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
     bubbleRef.current.style.transform = 'translateX(0px)';
+    
+    // Remove will-change after transition completes
+    setTimeout(() => {
+      if (bubbleRef.current) {
+        bubbleRef.current.style.willChange = 'auto';
+      }
+    }, 250);
   }, [handlePressEnd, msg, onSetReplyingTo, onVibrate]);
+
+  const memoizedMarkdown = React.useMemo(() => (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        p: ({node, ...props}) => <p className="whitespace-pre-wrap m-0" {...props} />,
+        a: ({node, ...props}: any) => {
+          const href = props.href;
+          const text = props.children?.[0];
+          if (href && text === href) {
+            return <LinkPreview url={href} />;
+          }
+          return <a className="underline decoration-current/30 underline-offset-4 hover:decoration-current break-all" target="_blank" rel="noreferrer" {...props} />;
+        },
+        code: ({node, inline, className, children, ...props}: any) => 
+          inline ? (
+            <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>
+          ) : (
+            <pre className="bg-black/20 dark:bg-white/10 p-2 rounded-md overflow-x-auto text-sm font-mono my-1" {...props}>
+              <code className={className}>{children}</code>
+            </pre>
+          ),
+        ul: ({node, ...props}) => <ul className="list-disc pl-4 my-1" {...props} />,
+        ol: ({node, ...props}) => <ol className="list-decimal pl-4 my-1" {...props} />,
+        li: ({node, ...props}) => <li className="my-0.5" {...props} />,
+        blockquote: ({node, ...props}) => <blockquote className="border-l-2 border-current/30 pl-2 italic my-1 opacity-90" {...props} />,
+      }}
+    >
+      {msg.content}
+    </ReactMarkdown>
+  ), [msg.content]);
 
   return (
     <div className={cn("relative flex group items-end w-full max-w-full", isMe ? "justify-end" : "justify-start")}>
@@ -237,7 +276,7 @@ export const MessageBubble = React.memo(({
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
-              className="absolute inset-0 rounded-lg overflow-hidden bg-black/50 backdrop-blur-[2px] flex items-center justify-center border border-white/10 z-10"
+              className="absolute inset-0 rounded-lg overflow-hidden bg-black/50 flex items-center justify-center border border-white/10 z-10"
             >
                <div className="w-[80%] max-w-[180px] flex flex-col items-center">
                  <div className="w-full flex justify-between items-end mb-2 px-1">
@@ -262,34 +301,7 @@ export const MessageBubble = React.memo(({
         </div>
       )}
       <div className="break-words min-w-0 mt-0.5">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={{
-            p: ({node, ...props}) => <p className="whitespace-pre-wrap m-0" {...props} />,
-            a: ({node, ...props}: any) => {
-              const href = props.href;
-              const text = props.children?.[0];
-              if (href && text === href) {
-                return <LinkPreview url={href} />;
-              }
-              return <a className="underline decoration-current/30 underline-offset-4 hover:decoration-current break-all" target="_blank" rel="noreferrer" {...props} />;
-            },
-            code: ({node, inline, className, children, ...props}: any) => 
-              inline ? (
-                <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>
-              ) : (
-                <pre className="bg-black/20 dark:bg-white/10 p-2 rounded-md overflow-x-auto text-sm font-mono my-1" {...props}>
-                  <code className={className}>{children}</code>
-                </pre>
-              ),
-            ul: ({node, ...props}) => <ul className="list-disc pl-4 my-1" {...props} />,
-            ol: ({node, ...props}) => <ol className="list-decimal pl-4 my-1" {...props} />,
-            li: ({node, ...props}) => <li className="my-0.5" {...props} />,
-            blockquote: ({node, ...props}) => <blockquote className="border-l-2 border-current/30 pl-2 italic my-1 opacity-90" {...props} />,
-          }}
-        >
-          {msg.content}
-        </ReactMarkdown>
+        {memoizedMarkdown}
       </div>
 
       {msg.reactions && msg.reactions.length > 0 && (

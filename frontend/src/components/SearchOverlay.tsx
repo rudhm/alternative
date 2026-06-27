@@ -57,7 +57,7 @@ export function SearchOverlay({ isOpen, onClose, onResultClick }: { isOpen: bool
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search messages..."
-              className="flex-1 bg-transparent border-none outline-none text-[var(--color-text)] text-sm"
+              className="flex-1 bg-transparent border-none outline-none text-[var(--color-text)] text-base"
             />
             {isLoading && <Loader2 size={16} className="text-[var(--color-accent)] animate-spin" />}
             <button onClick={onClose} className="p-1 rounded-full hover:bg-[var(--color-surface-raised)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">

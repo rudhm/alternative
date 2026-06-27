@@ -23,6 +23,17 @@ export function useMessages({
   const [activeReactionId, setActiveReactionId] = useState<string | null>(null);
   const [activeReactionPos, setActiveReactionPos] = useState<{ top: number, isMe: boolean } | null>(null);
 
+  const injectMessages = useCallback((newMsgs: any[]) => {
+    setMessages(prev => {
+      const existingIds = new Set(prev.map(m => m.id));
+      const toAdd = newMsgs.filter(m => !existingIds.has(m.id));
+      if (toAdd.length === 0) return prev;
+      const combined = [...prev, ...toAdd];
+      combined.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      return combined;
+    });
+  }, []);
+
   const handleSetActiveReaction = useCallback((id: string | null, pos?: { top: number, isMe: boolean }) => {
     setActiveReactionId(id);
     setActiveReactionPos(pos || null);
@@ -422,5 +433,6 @@ export function useMessages({
     retryMessage,
     handleFileUpload,
     uploadFiles,
+    injectMessages,
   };
 }
