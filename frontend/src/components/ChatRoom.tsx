@@ -5,12 +5,13 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useWs } from "@/components/WsProvider";
 import { NetworkBanner } from "@/components/NetworkBanner";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Sun, Moon, ChevronDown, Folder } from "lucide-react";
+import { Sun, Moon, ChevronDown, Folder, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { MessageBubble } from "./MessageBubble";
 import { MessageInputBar } from "./MessageInputBar";
 import { Sidebar } from "./Sidebar";
+import { SearchOverlay } from "./SearchOverlay";
 import { vibrate } from "@/lib/vibrate";
 
 import { useMessages } from "@/hooks/useMessages";
@@ -28,6 +29,7 @@ export function ChatRoom() {
   const [customOtherName, setCustomOtherName] = useState(defaultOtherName);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -272,6 +274,18 @@ export function ChatRoom() {
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setIsSearchOpen(!isSearchOpen)}
+            aria-label={isSearchOpen ? 'Close search' : 'Open search'}
+            className={cn(
+              "w-9 h-9 flex items-center justify-center rounded-full border transition-colors shadow-[var(--shadow-sm)]",
+              isSearchOpen 
+                ? "bg-[var(--color-accent)] border-[var(--color-accent)] text-white" 
+                : "bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text)]"
+            )}
+          >
+            <Search size={18} />
+          </button>
+          <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             aria-label={isSidebarOpen ? 'Close folders sidebar' : 'Open folders sidebar'}
             className={cn(
@@ -293,6 +307,22 @@ export function ChatRoom() {
         </div>
       </div>
       
+      <SearchOverlay 
+        isOpen={isSearchOpen} 
+        onClose={() => setIsSearchOpen(false)} 
+        onResultClick={(msg) => {
+          // If message is in currently loaded items, scroll to it.
+          // Otherwise, we would need to load context (out of scope for MVP).
+          const idx = items.findIndex(item => item.originalMsg?.id === msg.id);
+          if (idx !== -1) {
+            virtualizer.scrollToIndex(idx, { align: 'center' });
+            setActiveReactionId(msg.id);
+          } else {
+            alert("Message is from an older chat history not currently loaded.");
+          }
+        }} 
+      />
+
       {activeReactionId && (
         <>
           <div 

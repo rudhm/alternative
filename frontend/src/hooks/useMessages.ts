@@ -314,17 +314,20 @@ export function useMessages({
   }, [sendMessage, token]);
 
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
     e.target.value = '';
 
     const msgId = crypto.randomUUID();
-    const placeholderUrl = URL.createObjectURL(file);
+    const mediaPlaceholders = files.map(file => ({
+      url: URL.createObjectURL(file),
+      type: file.type.split('/')[0] === 'video' ? 'video' : file.type.split('/')[0] === 'audio' ? 'audio' : 'image'
+    }));
     
     const payload = {
       id: msgId,
       content: "",
-      media: [{ url: placeholderUrl, type: 'image' }]
+      media: mediaPlaceholders
     };
 
     setMessages(prev => [...prev, {
@@ -332,51 +335,52 @@ export function useMessages({
       authorId: userId,
       createdAt: new Date().toISOString(),
       pending: true,
+      uploadProgress: 0,
     }]);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://rudhasi.mooo.com";
       
-      const uploadPromise = new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", `${apiUrl}/api/upload`);
-        if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-        xhr.withCredentials = true;
+      const uploadPromises = files.map(file => {
+        return new Promise((resolve, reject) => {
+          const formData = new FormData();
+          formData.append("file", file);
+          
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", `${apiUrl}/api/upload`);
+          if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+          xhr.withCredentials = true;
 
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const progress = Math.round((event.loaded / event.total) * 100);
-            setMessages(prev => {
-              const idx = prev.findIndex(m => m.id === msgId);
-              if (idx === -1) return prev;
-              if (prev[idx].uploadProgress === progress) return prev;
-              const next = [...prev];
-              next[idx] = { ...next[idx], uploadProgress: progress };
-              return next;
-            });
+          // For simplicity, we only track progress for the first file to show a bar
+          if (file === files[0]) {
+            xhr.upload.onprogress = (event) => {
+              if (event.lengthComputable) {
+                const progress = Math.round((event.loaded / event.total) * 100);
+                setMessages(prev => {
+                  const idx = prev.findIndex(m => m.id === msgId);
+                  if (idx === -1) return prev;
+                  if (prev[idx].uploadProgress === progress) return prev;
+                  const next = [...prev];
+                  next[idx] = { ...next[idx], uploadProgress: progress };
+                  return next;
+                });
+              }
+            };
           }
-        };
 
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              resolve(JSON.parse(xhr.responseText));
-            } catch (err) {
-              reject(new Error("Invalid JSON response"));
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try { resolve(JSON.parse(xhr.responseText)); } catch (err) { reject(new Error("Invalid JSON")); }
+            } else {
+              reject(new Error("Upload failed"));
             }
-          } else {
-            reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.statusText} - ${xhr.responseText.substring(0, 50)}`));
-          }
-        };
-
-        xhr.onerror = () => reject(new Error("Network Error"));
-        xhr.send(formData);
+          };
+          xhr.onerror = () => reject(new Error("Network Error"));
+          xhr.send(formData);
+        });
       });
 
-      const data: any = await uploadPromise;
+      const uploadedMedia = await Promise.all(uploadPromises);
       
       isAtBottom.current = true;
       sendMessage({
@@ -384,7 +388,7 @@ export function useMessages({
         payload: {
           id: msgId,
           content: "",
-          media: [data]
+          media: uploadedMedia as any[]
         }
       });
       vibrate(10);

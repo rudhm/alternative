@@ -11,6 +11,7 @@ import { sendTelegramNotification } from './telegram';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
+import * as cheerio from 'cheerio';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -71,6 +72,47 @@ app.post('/api/upload', authMiddleware, uploadLimiter, uploadMiddleware.single('
     res.json({ url, type });
   } catch (err) {
     res.status(500).json({ error: 'Media processing failed' });
+  }
+});
+
+app.get('/api/messages/search', authMiddleware, async (req, res) => {
+  const q = req.query.q as string;
+  if (!q) return res.json({ messages: [] });
+  
+  try {
+    const messages = await prisma.message.findMany({
+      where: { 
+        content: { contains: q, mode: 'insensitive' } 
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      include: { media: true, reactions: true, readReceipt: true, replyTo: true },
+    });
+    res.json({ messages });
+  } catch (err) {
+    console.error("Search failed:", err);
+    res.status(500).json({ error: 'Search failed' });
+  }
+});
+
+app.get('/api/link-preview', authMiddleware, async (req, res) => {
+  const url = req.query.url as string;
+  if (!url) return res.status(400).json({ error: 'Missing url' });
+  try {
+    const response = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
+    if (!response.ok) return res.status(response.status).json({ error: 'Failed to fetch' });
+    const html = await response.text();
+    const $ = cheerio.load(html);
+    const title = $('meta[property="og:title"]').attr('content') || $('title').text() || '';
+    const description = $('meta[property="og:description"]').attr('content') || $('meta[name="description"]').attr('content') || '';
+    let image = $('meta[property="og:image"]').attr('content') || '';
+    if (image && !image.startsWith('http')) {
+      const urlObj = new URL(url);
+      image = `${urlObj.protocol}//${urlObj.host}${image.startsWith('/') ? '' : '/'}${image}`;
+    }
+    res.json({ title, description, image, url });
+  } catch (err) {
+    res.status(500).json({ error: 'Preview failed' });
   }
 });
 

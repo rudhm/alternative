@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Paperclip, X } from "lucide-react";
+import { Send, Paperclip, X, Smile } from "lucide-react";
+import EmojiPicker, { Theme } from 'emoji-picker-react';
 import { cn } from "@/lib/utils";
 
 interface MessageInputBarProps {
@@ -24,6 +25,7 @@ export const MessageInputBar = React.memo(({
 }: MessageInputBarProps) => {
   const [text, setText] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -101,12 +103,20 @@ export const MessageInputBar = React.memo(({
           >
             <Paperclip size={20} />
           </button>
+          <button 
+            aria-label="Insert Emoji"
+            className="w-10 h-10 flex items-center justify-center text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] transition-colors active:scale-[0.94] flex-shrink-0 mb-0.5"
+            onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)}
+          >
+            <Smile size={20} />
+          </button>
           <input 
             type="file" 
             className="hidden" 
             ref={fileInputRef} 
             onChange={onFileUpload} 
             accept="image/*,video/*,audio/*,application/pdf"
+            multiple
           />
           
           <textarea
@@ -160,6 +170,23 @@ export const MessageInputBar = React.memo(({
           </button>
         </div>
       </div>
+      <AnimatePresence>
+        {isEmojiPickerOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-full left-4 mb-2 z-50 pointer-events-auto"
+          >
+            <EmojiPicker 
+              onEmojiClick={(emojiObj) => {
+                setText(prev => prev + emojiObj.emoji);
+              }}
+              theme={Theme.AUTO}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 });

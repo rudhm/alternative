@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 import { RotateCcw, Reply } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImageLightbox } from "./ImageLightbox";
+import { LinkPreview } from "./LinkPreview";
 
 interface MessageBubbleProps {
   msg: any;
@@ -168,65 +169,70 @@ export const MessageBubble = React.memo(({
           <span className="truncate">{msg.replyTo.content || "Media"}</span>
         </div>
       )}
-      {msg.media?.map((m: any, i: number) => {
-        const getMediaUrl = (url: string) => {
-          if (url.startsWith('http') || url.startsWith('blob:')) return url;
-          const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "https://rudhasi.mooo.com").replace(/\/$/, "");
-          const cleanUrl = url.startsWith('/') ? url : `/${url}`;
-          return `${apiUrl}${cleanUrl}`;
-        };
-        const mediaUrl = getMediaUrl(m.url);
-        
-        const isCorruptedServerBlob = m.url.startsWith('blob:') && !msg.pending && !msg.failed;
-        
-        return (
-          <div key={i} className="mb-2 relative">
-            {m.type === 'image' ? (
-              isCorruptedServerBlob ? (
-                <div className="rounded-lg w-full h-32 bg-white/5 flex items-center justify-center text-[var(--color-text-muted)] text-sm italic">
-                  Image expired or unavailable
-                </div>
-              ) : (
-                <>
-                  <img 
+      {msg.media && msg.media.length > 0 && (
+        <div className={cn("grid gap-1 mb-2 relative w-full", msg.media.length === 1 ? "grid-cols-1" : msg.media.length === 2 ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3")}>
+          {msg.media.map((m: any, i: number) => {
+            const getMediaUrl = (url: string) => {
+              if (url.startsWith('http') || url.startsWith('blob:')) return url;
+              const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "https://rudhasi.mooo.com").replace(/\/$/, "");
+              const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+              return `${apiUrl}${cleanUrl}`;
+            };
+            const mediaUrl = getMediaUrl(m.url);
+            
+            const isCorruptedServerBlob = m.url.startsWith('blob:') && !msg.pending && !msg.failed;
+            
+            return (
+              <div key={i} className="relative w-full">
+                {m.type === 'image' ? (
+                  isCorruptedServerBlob ? (
+                    <div className="rounded-lg w-full h-32 bg-white/5 flex items-center justify-center text-[var(--color-text-muted)] text-sm italic">
+                      Image expired
+                    </div>
+                  ) : (
+                    <>
+                      <img 
+                        src={mediaUrl} 
+                        alt="media" 
+                        decoding="async"
+                        loading="lazy"
+                        className="rounded-lg w-full h-full min-h-[150px] max-h-64 object-cover cursor-zoom-in active:scale-[0.98] transition-transform"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setLightboxUrl(mediaUrl);
+                        }}
+                      />
+                      <ImageLightbox
+                        src={lightboxUrl || ""}
+                        isOpen={lightboxUrl === mediaUrl}
+                        onClose={() => setLightboxUrl(null)}
+                      />
+                    </>
+                  )
+                ) : m.type === 'video' ? (
+                  <video 
                     src={mediaUrl} 
-                    alt="media" 
-                    decoding="async"
-                    loading="lazy"
-                    className="rounded-lg max-w-full min-h-[200px] max-h-64 object-cover cursor-zoom-in active:scale-[0.98] transition-transform"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setLightboxUrl(mediaUrl);
-                    }}
+                    controls 
+                    preload="metadata"
+                    className="rounded-lg w-full min-h-[150px] max-h-64 object-cover"
+                    onClick={(e) => e.stopPropagation()}
                   />
-                  <ImageLightbox
-                    src={lightboxUrl || ""}
-                    isOpen={lightboxUrl === mediaUrl}
-                    onClose={() => setLightboxUrl(null)}
-                  />
-                </>
-              )
-            ) : m.type === 'video' ? (
-              <video 
-                src={mediaUrl} 
-                controls 
-                preload="metadata"
-                className="rounded-lg max-w-full min-h-[150px] max-h-64 object-cover"
-                onClick={(e) => e.stopPropagation()}
-              />
-            ) : m.type === 'audio' ? (
-              <div className="bg-black/10 dark:bg-white/10 rounded-full px-3 py-1 flex items-center min-w-[200px]">
-                <audio 
-                  src={mediaUrl} 
-                  controls 
-                  preload="metadata"
-                  className="w-full h-8"
-                  onClick={(e) => e.stopPropagation()}
-                />
+                ) : m.type === 'audio' ? (
+                  <div className="bg-black/10 dark:bg-white/10 rounded-full px-3 py-1 flex items-center min-w-[200px]">
+                    <audio 
+                      src={mediaUrl} 
+                      controls 
+                      preload="metadata"
+                      className="w-full h-8"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                ) : (
+                  <a href={mediaUrl} target="_blank" rel="noreferrer" className="block text-sm break-all underline decoration-current/30 underline-offset-4">{mediaUrl}</a>
+                )}
               </div>
-            ) : (
-              <a href={mediaUrl} target="_blank" rel="noreferrer" className="block text-sm break-all underline decoration-current/30 underline-offset-4">{mediaUrl}</a>
-            )}
+            );
+          })}
           {msg.uploadProgress !== undefined && msg.pending && (
             <motion.div 
               initial={{ opacity: 0 }} 
@@ -254,14 +260,20 @@ export const MessageBubble = React.memo(({
             </motion.div>
           )}
         </div>
-        );
-      })}
+      )}
       <div className="break-words min-w-0 mt-0.5">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
             p: ({node, ...props}) => <p className="whitespace-pre-wrap m-0" {...props} />,
-            a: ({node, ...props}) => <a className="underline decoration-current/30 underline-offset-4 hover:decoration-current break-all" target="_blank" rel="noreferrer" {...props} />,
+            a: ({node, ...props}: any) => {
+              const href = props.href;
+              const text = props.children?.[0];
+              if (href && text === href) {
+                return <LinkPreview url={href} />;
+              }
+              return <a className="underline decoration-current/30 underline-offset-4 hover:decoration-current break-all" target="_blank" rel="noreferrer" {...props} />;
+            },
             code: ({node, inline, className, children, ...props}: any) => 
               inline ? (
                 <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded text-sm font-mono" {...props}>{children}</code>
