@@ -18,7 +18,7 @@ app.set('trust proxy', 1);
 const server = createServer(app);
 const wss = new WebSocketServer({ noServer: true });
 
-const allowedOrigins = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : ['http://localhost:3000'];
+const allowedOrigins = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : ['http://localhost:3000', 'https://rudhasi.pages.dev'];
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
