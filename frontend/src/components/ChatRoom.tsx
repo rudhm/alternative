@@ -81,6 +81,7 @@ export function ChatRoom() {
     handleSend,
     retryMessage,
     handleFileUpload,
+    uploadFiles,
   } = useMessages({ token, userId, onMessage, sendMessage, parentRef, isAtBottom });
 
   const { typingUser, handleTyping } = useTyping(onMessage, sendMessage);
